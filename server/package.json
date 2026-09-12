@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Manzil API - Cozy Lo-Fi Study Room Edition",
+  "description": "Manzil API — Gamified Life Progression System",
   "main": "index.js",
   "type": "module",
   "scripts": {

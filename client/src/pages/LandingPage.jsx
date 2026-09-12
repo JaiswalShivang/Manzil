@@ -127,7 +127,7 @@ export const LandingPage = () => {
           <div className="lg:col-span-7 flex flex-col items-start">
             <div className="inline-flex items-center gap-2 bg-[#141414] text-[#F5F3EF] px-3.5 py-1 text-xs font-mono font-black tracking-widest uppercase border-2 border-[#141414] mb-6 shadow-brutal-sm">
               <span className="w-2 h-2 bg-[#E8402C] animate-pulse" />
-              <span>MANZIL // GAMIFIED LIFE RPG</span>
+              <span>MANZIL // GAMIFIED PRODUCTIVITY</span>
             </div>
 
             <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black font-space tracking-tight uppercase leading-[0.92] text-[#141414] mb-6">

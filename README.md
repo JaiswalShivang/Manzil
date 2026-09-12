@@ -1,4 +1,4 @@
-# MANZIL // LIFE RPG — Constructivist Bauhaus Edition ⚔️📐
+# MANZIL
 
 > **Stop Drifting. Start Leveling.**  
 > A full-stack MERN gamified productivity web application engineered under strict Constructivist Bauhaus principles. Tasks become active directives; daily routines unlock equipment, and life progression physically renders onto a 6-layer paperdoll avatar rig.

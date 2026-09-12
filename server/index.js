@@ -69,7 +69,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     app: 'Manzil API',
-    aesthetic: 'Constructivist Bauhaus Edition',
     timestamp: new Date().toISOString(),
   });
 });
