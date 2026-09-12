@@ -10,7 +10,6 @@ import { LevelUpModal } from '../components/levelup/LevelUpModal';
 import { Button } from '../components/ui/Button';
 import { QuestCardSkeleton } from '../components/ui/Skeleton';
 import {
-  Sparkles,
   Flame,
   Coins,
   Plus,
@@ -138,25 +137,13 @@ export const DashboardPage = () => {
     },
   });
 
-  const currentXP = user?.currentXP || 0;
-  const xpToNext = user?.xpToNextLevel || 100;
-  const xpPercentage = Math.min(100, Math.round((currentXP / xpToNext) * 100));
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div className="bg-white border-3 border-[#141414] p-6 sm:p-8 shadow-brutal-lg">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0.5 text-[10px] font-heading font-black">
-                OPERATIONAL
-              </span>
-              <span className="text-[11px] font-heading font-black uppercase text-[#141414]/60">
-                COMMAND DECK // HQ
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-heading font-black text-[#141414] tracking-tight uppercase">
-              AGENT: {user?.username || 'SCHOLAR'}
+            <h1 className="text-3xl sm:text-4xl font-heading font-black text-[#141414] tracking-tight">
+              {user?.username || 'Scholar'}
             </h1>
           </div>
 
@@ -193,26 +180,6 @@ export const DashboardPage = () => {
               <Plus className="w-4 h-4" />
               <span>LOG QUEST</span>
             </Button>
-          </div>
-        </div>
-
-        {/* Thick Hard Bordered XP Bar */}
-        <div className="space-y-1.5 pt-4 border-t-2 border-[#141414]">
-          <div className="flex items-center justify-between text-xs font-heading font-black uppercase">
-            <span className="flex items-center gap-1 text-[#141414]">
-              <Sparkles className="w-3.5 h-3.5 text-[#E8402C]" />
-              <span>EXPERIENCE PROTOCOL PROGRESS</span>
-            </span>
-            <span>
-              {currentXP} / {xpToNext} XP ({xpPercentage}%)
-            </span>
-          </div>
-
-          <div className="w-full h-5 bg-[#F5F3EF] border-2 border-[#141414] p-0.5">
-            <div
-              className="h-full bg-[#E8402C] transition-all duration-300"
-              style={{ width: `${xpPercentage}%` }}
-            />
           </div>
         </div>
       </div>
