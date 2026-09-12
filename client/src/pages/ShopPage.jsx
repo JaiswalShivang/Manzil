@@ -218,7 +218,7 @@ export const ShopPage = () => {
               CURRENT LOADOUT PREVIEW
             </span>
             <h3 className="text-base font-heading font-black text-[#141414] uppercase mt-1">
-              ADVENTURER STATUS: {user?.username || 'AGENT'}
+              ADVENTURER: {user?.username || 'AGENT'}
             </h3>
             <p className="text-xs font-mono text-[#141414]/70 mt-0.5 uppercase">
               Purchasing or equipping items will instantly update your character's live sprite walk cycle.
