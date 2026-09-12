@@ -1,9 +1,10 @@
-import { Lock, Coins, Check, Scissors, Shirt, Shield, Footprints, Sword, Sparkles } from 'lucide-react';
+import { Lock, Coins, Check, Scissors, Shirt, Footprints, Sword, Sparkles } from 'lucide-react';
+import { PantsIcon } from '../ui/PantsIcon';
 
 const slotIcons = {
   hair: Scissors,
   chest: Shirt,
-  pants: Shield,
+  pants: PantsIcon,
   shoes: Footprints,
   weapon: Sword,
   aura: Sparkles,
@@ -57,7 +58,7 @@ export const ShopItemCard = ({
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 bg-[#141414] text-white flex items-center gap-1">
               <Icon className="w-3 h-3" />
-              <span>{targetSlot}</span>
+              <span>{targetSlot === 'chest' ? 'shirt' : targetSlot}</span>
             </span>
             <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 border border-[#141414] bg-[#2B4AE8] text-white">
               LV.{reqLevel}

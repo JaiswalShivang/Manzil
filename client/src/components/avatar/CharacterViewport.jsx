@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Avatar } from './Avatar';
 import {
   Sparkles,
-  Shield,
   Zap,
   Shirt,
   Scissors,
@@ -11,11 +10,12 @@ import {
   ArrowRight,
   X,
 } from 'lucide-react';
+import { PantsIcon } from '../ui/PantsIcon';
 
 const slotIcons = {
   hair: Scissors,
   chest: Shirt,
-  pants: Shield,
+  pants: PantsIcon,
   shoes: Footprints,
   weapon: Sword,
   aura: Sparkles,
@@ -35,7 +35,7 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false }) =>
 
   const slots = [
     { key: 'hair', label: 'HAIR' },
-    { key: 'chest', label: 'CHEST' },
+    { key: 'chest', label: 'SHIRT' },
     { key: 'pants', label: 'PANTS' },
     { key: 'shoes', label: 'SHOES' },
     { key: 'weapon', label: 'WEAPON' },

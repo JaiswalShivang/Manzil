@@ -5,13 +5,13 @@ import api from '../api/client';
 import { ShopItemCard } from '../components/shop/ShopItemCard';
 import { Avatar } from '../components/avatar/Avatar';
 import { Skeleton } from '../components/ui/Skeleton';
-import { Coins, Sparkles, Scissors, Shirt, Shield, Footprints, Sword } from 'lucide-react';
+import { Coins, Sparkles, Scissors, Shirt, Footprints, Sword } from 'lucide-react';
+import { PantsIcon } from '../components/ui/PantsIcon';
 
 const slotTabs = [
-  { key: '', label: 'ALL GEAR', icon: Sparkles },
   { key: 'hair', label: 'HAIR', icon: Scissors },
-  { key: 'chest', label: 'CHEST', icon: Shirt },
-  { key: 'pants', label: 'PANTS', icon: Shield },
+  { key: 'chest', label: 'SHIRT', icon: Shirt },
+  { key: 'pants', label: 'PANTS', icon: PantsIcon },
   { key: 'shoes', label: 'SHOES', icon: Footprints },
   { key: 'weapon', label: 'WEAPONS', icon: Sword },
   { key: 'aura', label: 'AURAS & CRYSTALS', icon: Sparkles },
@@ -20,7 +20,7 @@ const slotTabs = [
 export const ShopPage = () => {
   const { user, updateUserData } = useAuth();
 
-  const [activeSlot, setActiveSlot] = useState('');
+  const [activeSlot, setActiveSlot] = useState('hair');
   const [notification, setNotification] = useState(null);
 
   // Fetch shop items

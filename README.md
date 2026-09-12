@@ -1,4 +1,4 @@
-# Life RPG — Cozy Lo-Fi Study Room Edition ☕🪴
+# Manzil — Cozy Lo-Fi Study Room Edition ☕🪴
 
 > A complete, production-grade MERN gamified productivity web application that turns real-world study goals and daily habits into a cozy RPG progression system.
 
@@ -6,7 +6,7 @@
 
 ## 📖 Concept & Overview
 
-Instead of harsh corporate dashboards or generic pixel battlers, **Life RPG** frames your character as your **personal study room**. As you accomplish real-world quests, you earn **Focus Points (FP)** and **Cozy Coins**. Leveling up and completing quests unlocks decorations (plants, lamps, posters, mugs, rugs, and wallpapers) that dynamically populate your interactive study nook.
+Instead of harsh corporate dashboards or generic pixel battlers, **Manzil** frames your character as your **personal study room**. As you accomplish real-world quests, you earn **Focus Points (FP)** and **Cozy Coins**. Leveling up and completing quests unlocks decorations (plants, lamps, posters, mugs, rugs, and wallpapers) that dynamically populate your interactive study nook.
 
 ### Core Gamification Elements
 - **Quests & Focus Points (XP)**: Tasks award server-calculated XP ($50 \times \text{level}^{1.5}$) and Cozy Coins. Client-submitted reward values are never trusted.
