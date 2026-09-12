@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 
-// Cache connection across serverless function invocations
 let isConnected = false;
 
 export const connectDB = async () => {
@@ -8,15 +7,21 @@ export const connectDB = async () => {
     return mongoose.connection;
   }
 
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not defined.');
+  }
+
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 15000,
     });
     isConnected = true;
-    console.log(`🌿 Cozy MongoDB Connected: ${conn.connection.host}`);
+    console.log(`🌿 MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (error) {
+    isConnected = false;
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.error(`💡 Tip: Make sure your current IP address is whitelisted in MongoDB Atlas Network Access.`);
+    throw error;
   }
 };

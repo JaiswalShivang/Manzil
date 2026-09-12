@@ -14,8 +14,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize database connection
-connectDB();
+// Eagerly connect locally or initialize connection
+connectDB().catch((err) => {
+  console.error('Initial DB connection attempt failed:', err.message);
+});
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -42,11 +44,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Database connection middleware for Serverless invocations
+app.use(async (req, res, next) => {
+  if (req.path === '/api/health') return next();
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: `Database connection error: ${err.message}. Please verify MONGODB_URI on Vercel and MongoDB Atlas Network Access (0.0.0.0/0).`,
+    });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     app: 'Life RPG API',
-    aesthetic: 'Cozy Lo-Fi Study Room ☕🪴',
+    aesthetic: 'Constructivist Bauhaus Edition',
     timestamp: new Date().toISOString(),
   });
 });
@@ -68,7 +84,7 @@ app.use(errorHandler);
 // Only listen on port when not running as a Vercel Serverless Function
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`✨ Cozy Study Room API running on http://localhost:${PORT}`);
+    console.log(`✨ Life RPG API running on http://localhost:${PORT}`);
     console.log(`🍵 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
