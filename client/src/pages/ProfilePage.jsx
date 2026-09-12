@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import api from '../api/client';
 import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/avatar/Avatar';
@@ -29,8 +29,7 @@ const formatRelativeTime = (date) => {
 };
 
 export const ProfilePage = () => {
-  const { user, isLoading, updateUserData, logout } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, isLoading, logout } = useAuth();
 
   // Fetch completed quests for Activity Ledger
   const { data: completedQuestsData, isLoading: isQuestsLoading } = useQuery({
@@ -38,35 +37,6 @@ export const ProfilePage = () => {
     queryFn: async () => {
       const res = await api.get('/quests?status=completed');
       return res.data;
-    },
-  });
-
-  // Equip Mutation via /api/equip
-  const equipMutation = useMutation({
-    mutationFn: async (itemId) => {
-      const res = await api.patch('/equip', { itemId });
-      return res.data;
-    },
-    onSuccess: (data) => {
-      if (data.user) {
-        updateUserData(data.user);
-      }
-      queryClient.invalidateQueries({ queryKey: ['shop'] });
-    },
-  });
-
-  // Unequip Mutation via /api/equip/unequip
-  const unequipMutation = useMutation({
-    mutationFn: async (payload) => {
-      const body = typeof payload === 'string' ? { itemType: payload } : payload;
-      const res = await api.patch('/equip/unequip', body);
-      return res.data;
-    },
-    onSuccess: (data) => {
-      if (data.user) {
-        updateUserData(data.user);
-      }
-      queryClient.invalidateQueries({ queryKey: ['shop'] });
     },
   });
 
@@ -339,11 +309,10 @@ export const ProfilePage = () => {
           {streakDays.map((d) => (
             <div
               key={d.day}
-              className={`aspect-square border-2 border-[#141414] flex flex-col items-center justify-center text-[10px] font-mono font-bold transition-none ${
-                d.isCompleted
-                  ? 'bg-[#E8402C] text-white'
-                  : 'bg-[#F5F3EF] text-[#141414]/50'
-              } ${d.isToday ? 'ring-2 ring-[#141414] ring-offset-2' : ''}`}
+              className={`aspect-square border-2 border-[#141414] flex flex-col items-center justify-center text-[10px] font-mono font-bold transition-none ${d.isCompleted
+                ? 'bg-[#E8402C] text-white'
+                : 'bg-[#F5F3EF] text-[#141414]/50'
+                } ${d.isToday ? 'ring-2 ring-[#141414] ring-offset-2' : ''}`}
             >
               <span>{d.day}</span>
             </div>
@@ -352,126 +321,6 @@ export const ProfilePage = () => {
         <p className="text-[11px] font-mono text-[#141414]/70 mt-4 uppercase">
           * PROTOCOL RULE: COMPLETE AT LEAST ONE ACTIVE QUEST BEFORE MIDNIGHT TO EXTEND CADENCE.
         </p>
-      </div>
-
-      {/* Integrity Model Protocol Panel */}
-      <div className="bg-[#141414] text-[#F5F3EF] border-3 border-[#141414] p-6 shadow-brutal font-mono">
-        <div className="flex items-center gap-2 text-xs font-black text-[#F2B705] mb-2 uppercase tracking-wider">
-          <Shield className="w-4 h-4 text-[#F2B705]" />
-          <span>// INTEGRITY MODEL // SECURITY SPECIFICATION</span>
-        </div>
-        <p className="text-xs sm:text-sm font-bold leading-relaxed text-[#F5F3EF]/90 max-w-4xl uppercase">
-          Task completion is self-declared by the operative. All XP, Gold, and skill rewards are calculated and validated server-side from stored directive data — client-submitted values are never trusted, and duplicate completions are rejected atomically. No manual review layer exists by design; verification targets technical exploitation, not real-world task honesty.
-        </p>
-        <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-white/20 text-[10px] font-bold text-white/60 uppercase">
-          <span>• ATOMIC STATUS TRANSITION</span>
-          <span>• STRICT SERVER REWARD DERIVATION</span>
-          <span>• ANTI-DOUBLE EXECUTION LOCK</span>
-        </div>
-      </div>
-
-      {/* Tactical Asset Inventory */}
-      <div>
-        <div className="flex items-baseline justify-between mb-4 border-b-3 border-[#141414] pb-2">
-          <div>
-            <span className="text-xs font-mono font-bold text-[#F2B705] block">// HARDWARE REQUISITIONS</span>
-            <h2 className="text-2xl font-black font-space text-[#141414] uppercase">
-              TACTICAL INVENTORY
-            </h2>
-          </div>
-          <span className="text-xs font-mono font-bold text-[#141414]/60">
-            {inventory.length} TOTAL ASSETS ACQUIRED
-          </span>
-        </div>
-
-        {inventory.length === 0 ? (
-          <div className="bg-[#FAF3E8] border-3 border-[#141414] p-12 text-center shadow-brutal">
-            <div className="text-4xl font-space font-extrabold text-[#141414] mb-2">[ 00 ]</div>
-            <h3 className="text-base font-extrabold font-space text-[#141414] uppercase">
-              NO ACQUIRED ASSETS IN STORAGE
-            </h3>
-            <p className="text-xs font-mono text-[#141414]/70 mt-1 uppercase">
-              COMMENCE QUESTS TO GENERATE SURPLUS GOLD, THEN ACCESS THE VAULT.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {inventory.map((inv) => {
-              const item = inv?.itemId || inv;
-              if (!item || !item.name) return null;
-
-              const slotKey = item.itemType === 'crystal' ? 'aura' : item.itemType || item.slot || 'chest';
-              const equippedItemInSlot = user?.equipped?.[slotKey];
-              const isMounted =
-                (equippedItemInSlot?._id || equippedItemInSlot)?.toString() === item._id.toString();
-
-              return (
-                <div
-                  key={item._id}
-                  className="bg-[#FAF3E8] border-3 border-[#141414] p-5 shadow-brutal flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <div>
-                        <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 bg-[#141414] text-white">
-                          [{slotKey}]
-                        </span>
-                        <span className="text-sm font-black font-space text-[#141414] uppercase block mt-1.5">
-                          {item.name}
-                        </span>
-                      </div>
-                      {isMounted ? (
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#2B4AE8] text-white border border-[#141414] uppercase">
-                          EQUIPPED
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#F5F3EF] text-[#141414]/70 border border-[#141414] uppercase">
-                          STANDBY
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Animated Sprite Thumbnail */}
-                    <div className="w-full h-24 bg-[#F5F3EF] border-2 border-[#141414] flex items-center justify-center my-3 relative overflow-hidden">
-                      {item.webpUrl ? (
-                        <div
-                          className="sprite-layer transform scale-90"
-                          style={{ backgroundImage: `url('${item.webpUrl}')` }}
-                        />
-                      ) : (
-                        <span className="text-xs font-mono">📦</span>
-                      )}
-                    </div>
-
-                    <div className="text-[10px] font-mono font-bold text-[#141414]/60 uppercase">
-                      REQ: LV.{item.requiredLevel || item.unlockLevel || 1}
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t-2 border-[#141414]/20 mt-3">
-                    {isMounted ? (
-                      <button
-                        onClick={() => unequipMutation.mutate({ itemType: slotKey, itemId: item._id })}
-                        disabled={unequipMutation.isPending}
-                        className="w-full py-2 bg-[#F5F3EF] hover:bg-[#141414] text-[#141414] hover:text-white border-2 border-[#141414] text-xs font-mono font-bold uppercase transition-none cursor-pointer"
-                      >
-                        UNEQUIP PIECE
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => equipMutation.mutate(item._id)}
-                        disabled={equipMutation.isPending}
-                        className="w-full py-2 bg-[#E8402C] hover:bg-[#141414] text-white border-2 border-[#141414] text-xs font-mono font-bold uppercase transition-none cursor-pointer shadow-brutal-sm"
-                      >
-                        EQUIP TO RIG →
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* Read-Only Activity Ledger Timeline */}

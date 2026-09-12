@@ -42,20 +42,14 @@ export const Navbar = () => {
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b-3 border-[#141414] transition-all duration-200 ${
-        isScrolled
-          ? 'bg-[#F5F3EF]/90 backdrop-blur-md shadow-brutal-sm'
-          : 'bg-[#F5F3EF] shadow-none'
-      }`}
+      className={`sticky top-0 z-40 border-b-3 border-[#141414] transition-shadow duration-150 bg-[#F5F3EF] ${isScrolled ? 'shadow-brutal-sm' : 'shadow-none'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Bauhaus Wordmark Logo */}
         <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2 group">
           <div className="bg-[#141414] text-[#F5F3EF] px-3 py-1.5 font-heading font-black text-xl tracking-tighter border-2 border-[#141414] shadow-brutal-sm group-hover:bg-[#E8402C] transition-colors">
             MANZIL
-          </div>
-          <div className="hidden sm:block text-[11px] font-heading font-extrabold uppercase tracking-widest text-[#141414]/70 border-l-2 border-[#141414] pl-2">
-            CONSTRUCTIVIST HUD
           </div>
         </Link>
 
@@ -68,11 +62,10 @@ export const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 font-heading font-bold text-xs uppercase tracking-wider transition-all border-r-2 border-[#141414] last:border-r-0 ${
-                    isActive
+                  className={`px-4 py-2 font-heading font-bold text-xs uppercase tracking-wider transition-all border-r-2 border-[#141414] last:border-r-0 ${isActive
                       ? 'bg-[#141414] text-[#F5F3EF]'
                       : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
-                  }`}
+                    }`}
                 >
                   {link.name}
                 </Link>
@@ -146,9 +139,8 @@ export const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex-1 py-3 text-center font-heading font-black text-xs uppercase border-r-2 border-[#141414] last:border-r-0 transition-colors ${
-                  isActive ? 'bg-[#141414] text-[#F5F3EF]' : 'text-[#141414]'
-                }`}
+                className={`flex-1 py-3 text-center font-heading font-black text-xs uppercase border-r-2 border-[#141414] last:border-r-0 transition-colors ${isActive ? 'bg-[#141414] text-[#F5F3EF]' : 'text-[#141414]'
+                  }`}
               >
                 {link.name}
               </Link>

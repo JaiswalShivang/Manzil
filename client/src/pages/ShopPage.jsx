@@ -178,20 +178,9 @@ export const ShopPage = () => {
       {/* Top Overwatch Header Banner */}
       <div className="bg-[#141414] text-[#F5F3EF] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-[#E8402C] text-white text-[10px] font-heading font-black px-2 py-0.5 uppercase">
-              REQUISITIONS
-            </span>
-            <span className="text-[10px] font-heading font-bold text-[#F2B705] uppercase">
-              // AVATAR ARMORY & EQUIPMENT
-            </span>
-          </div>
           <h1 className="text-3xl sm:text-4xl font-heading font-black tracking-tight uppercase text-white">
             THE VAULT
           </h1>
-          <p className="text-xs font-mono text-[#F5F3EF]/70 mt-1 uppercase">
-            ACQUIRE TACTICAL SPRITE ASSETS TO CUSTOMIZE YOUR CHARACTER'S ON-DUTY RIG.
-          </p>
         </div>
 
         {/* Live User Telemetry Badge */}

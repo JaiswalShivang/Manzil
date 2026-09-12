@@ -22,12 +22,11 @@ export const QuestLogPage = () => {
   const [levelUpData, setLevelUpData] = useState({ isOpen: false, newLevel: 1 });
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // Fetch all quests
+  // Fetch quests by category (status filtered client-side for instant responsive tab counts)
   const { data: questsData, isLoading } = useQuery({
-    queryKey: ['quests', statusFilter, categoryFilter],
+    queryKey: ['quests', categoryFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (statusFilter) params.append('status', statusFilter);
       if (categoryFilter) params.append('category', categoryFilter);
 
       const res = await api.get(`/quests?${params.toString()}`);
@@ -35,18 +34,20 @@ export const QuestLogPage = () => {
     },
   });
 
-  const quests = questsData?.quests || [];
+  const allQuests = questsData?.quests || [];
 
-  const filteredQuests = quests.filter((q) => {
-    if (!searchQuery.trim()) return true;
-    return (
-      q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      q.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  const totalPending = allQuests.filter((q) => q.status === 'pending').length;
+  const totalCompleted = allQuests.filter((q) => q.status === 'completed').length;
 
-  const totalPending = quests.filter((q) => q.status === 'pending').length;
-  const totalCompleted = quests.filter((q) => q.status === 'completed').length;
+  const filteredQuests = allQuests
+    .filter((q) => (statusFilter ? q.status === statusFilter : true))
+    .filter((q) => {
+      if (!searchQuery.trim()) return true;
+      return (
+        q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
 
   // Create Quest Mutation
   const createQuestMutation = useMutation({
@@ -72,8 +73,8 @@ export const QuestLogPage = () => {
     },
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['quests'] });
-      const previous = queryClient.getQueryData(['quests', statusFilter, categoryFilter]);
-      queryClient.setQueryData(['quests', statusFilter, categoryFilter], (old) => {
+      const previous = queryClient.getQueryData(['quests', categoryFilter]);
+      queryClient.setQueryData(['quests', categoryFilter], (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -89,7 +90,7 @@ export const QuestLogPage = () => {
     },
     onError: (err, variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['quests', statusFilter, categoryFilter], context.previous);
+        queryClient.setQueryData(['quests', categoryFilter], context.previous);
       }
       setErrorMessage(err.response?.data?.message || 'Failed to update quest');
     },
@@ -103,9 +104,9 @@ export const QuestLogPage = () => {
     },
     onMutate: async (quest) => {
       await queryClient.cancelQueries({ queryKey: ['quests'] });
-      const previous = queryClient.getQueryData(['quests', statusFilter, categoryFilter]);
+      const previous = queryClient.getQueryData(['quests', categoryFilter]);
 
-      queryClient.setQueryData(['quests', statusFilter, categoryFilter], (old) => {
+      queryClient.setQueryData(['quests', categoryFilter], (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -131,7 +132,7 @@ export const QuestLogPage = () => {
     },
     onError: (err, variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['quests', statusFilter, categoryFilter], context.previous);
+        queryClient.setQueryData(['quests', categoryFilter], context.previous);
       }
       setErrorMessage('Could not complete quest. Retrying...');
     },
@@ -145,8 +146,8 @@ export const QuestLogPage = () => {
     },
     onMutate: async (questId) => {
       await queryClient.cancelQueries({ queryKey: ['quests'] });
-      const previous = queryClient.getQueryData(['quests', statusFilter, categoryFilter]);
-      queryClient.setQueryData(['quests', statusFilter, categoryFilter], (old) => {
+      const previous = queryClient.getQueryData(['quests', categoryFilter]);
+      queryClient.setQueryData(['quests', categoryFilter], (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -160,7 +161,7 @@ export const QuestLogPage = () => {
     },
     onError: (err, variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['quests', statusFilter, categoryFilter], context.previous);
+        queryClient.setQueryData(['quests', categoryFilter], context.previous);
       }
       setErrorMessage(err.response?.data?.message || 'Could not delete quest');
     },
@@ -177,9 +178,6 @@ export const QuestLogPage = () => {
               QUEST LOG
             </h1>
           </div>
-          <p className="text-xs font-heading font-bold uppercase text-[#141414]/60 mt-1">
-            MANAGE DEPLOYABLE TASKS AND EXECUTION MILESTONES
-          </p>
         </div>
 
         <Button
@@ -267,16 +265,6 @@ export const QuestLogPage = () => {
           ))}
         </div>
       )}
-
-      {/* Integrity Model Protocol Note */}
-      <div className="bg-[#FAF3E8] border-2 border-[#141414] p-4 shadow-brutal-sm font-mono text-xs">
-        <div className="text-[10px] font-black text-[#2B4AE8] mb-1 uppercase tracking-wider">
-          // INTEGRITY MODEL
-        </div>
-        <p className="text-[#141414]/80 leading-relaxed font-bold uppercase text-[11px]">
-          Task completion is self-declared by the operative. All XP, Gold, and skill rewards are calculated and validated server-side from stored directive data — client-submitted values are never trusted, and duplicate completions are rejected atomically. No manual review layer exists by design; verification targets technical exploitation, not real-world task honesty.
-        </p>
-      </div>
 
       {/* Quest Create / Edit Modal */}
       <QuestFormModal

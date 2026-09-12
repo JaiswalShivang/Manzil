@@ -101,20 +101,10 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLo
               </div>
             </div>
           </div>
-
-          <div className="text-center mt-3">
-            <span className="text-[11px] font-heading font-black text-[#141414]/70 uppercase">
-              PIXEL RETRO RENDERING // FRAME-SYNC ENABLED
-            </span>
-          </div>
         </div>
 
         {/* Right Stage: 6 Equipment Slot Indicators */}
         <div className="lg:col-span-7 space-y-3">
-          <div className="text-xs font-heading font-black text-[#141414] uppercase border-b-2 border-[#141414] pb-1 flex items-center justify-between">
-            <span>TACTICAL LOADOUT SLOTS</span>
-            <span className="text-[10px] text-[#141414]/60">CLICK [X] TO UNEQUIP PIECE</span>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {slots.map(({ key, label }) => {
@@ -125,9 +115,8 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLo
               return (
                 <div
                   key={key}
-                  className={`border-2 border-[#141414] p-3 flex items-center justify-between shadow-brutal-sm transition-none ${
-                    item ? 'bg-white' : 'bg-[#FAF3E8]/70 border-dashed'
-                  }`}
+                  className={`border-2 border-[#141414] p-3 flex items-center justify-between shadow-brutal-sm transition-none ${item ? 'bg-white' : 'bg-[#FAF3E8]/70 border-dashed'
+                    }`}
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div
@@ -166,11 +155,6 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLo
                 </div>
               );
             })}
-          </div>
-
-          <div className="p-3 bg-[#FAF3E8] border-2 border-[#141414] text-[11px] font-heading font-bold text-[#141414]/80 uppercase mt-4">
-            <span className="font-black text-[#E8402C]">// NOTICE: </span>
-            A fresh operative shows the plain base body. Equip weapons, tunics, headwear, and auras in The Vault to alter character appearance.
           </div>
         </div>
       </div>

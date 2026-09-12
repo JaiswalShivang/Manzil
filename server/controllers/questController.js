@@ -16,6 +16,15 @@ export const getQuests = async (req, res, next) => {
       filter.category = category;
     }
 
+    // Everyday/recurring quests scheduled for future days should only become visible when their day arrives
+    const now = new Date();
+    filter.$or = [
+      { status: 'completed' },
+      { isRecurring: { $ne: true } },
+      { dueDate: null },
+      { dueDate: { $lte: now } },
+    ];
+
     const quests = await Quest.find(filter).sort({
       status: 1,
       dueDate: 1,
@@ -117,6 +126,30 @@ export const completeQuest = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    // Check quest status and permissions before transition
+    const existingQuest = await Quest.findOne({ _id: id, userId: req.user._id });
+    if (!existingQuest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Quest not found or you do not have permission to complete it',
+      });
+    }
+
+    if (existingQuest.status === 'completed') {
+      return res.status(409).json({
+        success: false,
+        message: 'Directive already executed. Duplicate execution rejected.',
+      });
+    }
+
+    // Anti-cheat: prevent completing a recurring quest ahead of its scheduled date
+    if (existingQuest.isRecurring && existingQuest.dueDate && new Date() < existingQuest.dueDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'This everyday quest is scheduled for tomorrow. It cannot be completed ahead of time.',
+      });
+    }
+
     // ATOMIC STATE TRANSITION:
     // Only transitions if quest is in 'pending' status and belongs to req.user._id.
     // Rapid duplicate requests or race conditions atomically fail on the second request.
@@ -127,16 +160,9 @@ export const completeQuest = async (req, res, next) => {
     );
 
     if (!quest) {
-      const existingQuest = await Quest.findOne({ _id: id, userId: req.user._id });
-      if (existingQuest && existingQuest.status === 'completed') {
-        return res.status(409).json({
-          success: false,
-          message: 'Directive already executed. Duplicate execution rejected.',
-        });
-      }
-      return res.status(404).json({
+      return res.status(409).json({
         success: false,
-        message: 'Quest not found or you do not have permission to complete it',
+        message: 'Directive already executed. Duplicate execution rejected.',
       });
     }
 
@@ -178,21 +204,33 @@ export const completeQuest = async (req, res, next) => {
 
     let nextRecurringQuest = null;
     if (quest.isRecurring) {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const now = new Date();
+      // Set to 00:00:00 of the next calendar day so it unlocks at the start of tomorrow
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
 
-      nextRecurringQuest = new Quest({
+      // Guard: Ensure we do not create duplicate recurring instances for tomorrow
+      const existingTomorrowQuest = await Quest.findOne({
         userId: user._id,
         title: quest.title,
-        description: quest.description,
-        category: quest.category,
-        xpReward: quest.xpReward,
-        coinReward: quest.coinReward,
-        isRecurring: true,
-        dueDate: tomorrow,
         status: 'pending',
+        isRecurring: true,
+        dueDate: { $gte: tomorrow },
       });
-      await nextRecurringQuest.save();
+
+      if (!existingTomorrowQuest) {
+        nextRecurringQuest = new Quest({
+          userId: user._id,
+          title: quest.title,
+          description: quest.description,
+          category: quest.category,
+          xpReward: quest.xpReward,
+          coinReward: quest.coinReward,
+          isRecurring: true,
+          dueDate: tomorrow,
+          status: 'pending',
+        });
+        await nextRecurringQuest.save();
+      }
     }
 
     await user.save();
