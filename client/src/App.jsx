@@ -29,9 +29,11 @@ const ProtectedRoute = ({ children }) => {
   if (isLoading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 space-y-4">
-        <span className="text-3xl animate-bounce">☕</span>
-        <Skeleton width="w-48" height="h-4" rounded="rounded-full" />
-        <p className="text-xs text-[#78665B] font-handwritten text-base">Warming up your study room...</p>
+        <div className="w-8 h-8 bg-[#E8402C] border-2 border-[#141414] shadow-brutal-sm animate-pulse" />
+        <Skeleton width="w-48" height="h-3" rounded="rounded-none" />
+        <p className="text-xs font-mono font-black text-[#141414]/70 uppercase tracking-widest">
+          INITIALIZING COMMAND DECK...
+        </p>
       </div>
     );
   }

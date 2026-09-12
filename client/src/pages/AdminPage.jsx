@@ -49,6 +49,11 @@ export const AdminPage = () => {
   const [uploadSummary, setUploadSummary] = useState(null);
   const [itemRowEdits, setItemRowEdits] = useState({});
 
+  // Inline confirmation tracking states
+  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState(null);
+  const [confirmDeleteQuestId, setConfirmDeleteQuestId] = useState(null);
+  const [confirmDeleteItemId, setConfirmDeleteItemId] = useState(null);
+
   const isAdmin = user?.role === 'admin';
 
   // Handle Admin Login
@@ -544,16 +549,35 @@ export const AdminPage = () => {
                         EDIT
                       </button>
                       {u.role !== 'admin' && (
-                        <button
-                          onClick={() => {
-                            if (window.confirm(`Purge agent ${u.username} and all associated records?`)) {
-                              deleteUserMutation.mutate(u._id);
-                            }
-                          }}
-                          className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
-                        >
-                          PURGE
-                        </button>
+                        confirmDeleteUserId === u._id ? (
+                          <div className="inline-flex items-center gap-1 bg-[#FAF3E8] border border-[#141414] p-1 shadow-brutal-sm">
+                            <span className="text-[10px] font-mono font-black text-[#E8402C] px-1">PURGE?</span>
+                            <button
+                              onClick={() => {
+                                setConfirmDeleteUserId(null);
+                                deleteUserMutation.mutate(u._id);
+                              }}
+                              className="px-2 py-0.5 bg-[#E8402C] text-white text-[10px] font-mono font-black border border-[#141414] hover:bg-[#141414] cursor-pointer"
+                              title="Confirm Purge"
+                            >
+                              CONFIRM
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteUserId(null)}
+                              className="px-2 py-0.5 bg-white text-[#141414] text-[10px] font-mono font-black border border-[#141414] hover:bg-[#EBE7DF] cursor-pointer"
+                              title="Cancel Purge"
+                            >
+                              CANCEL
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteUserId(u._id)}
+                            className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
+                          >
+                            PURGE
+                          </button>
+                        )
                       )}
                     </td>
                   </tr>
@@ -628,16 +652,35 @@ export const AdminPage = () => {
                           FORCE VERIFY
                         </button>
                       )}
-                      <button
-                        onClick={() => {
-                          if (window.confirm('Terminate this directive?')) {
-                            deleteQuestMutation.mutate(q._id);
-                          }
-                        }}
-                        className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer"
-                      >
-                        DELETE
-                      </button>
+                      {confirmDeleteQuestId === q._id ? (
+                        <div className="inline-flex items-center gap-1 bg-[#FAF3E8] border border-[#141414] p-1 shadow-brutal-sm">
+                          <span className="text-[10px] font-mono font-black text-[#E8402C] px-1">TERMINATE?</span>
+                          <button
+                            onClick={() => {
+                              setConfirmDeleteQuestId(null);
+                              deleteQuestMutation.mutate(q._id);
+                            }}
+                            className="px-2 py-0.5 bg-[#E8402C] text-white text-[10px] font-mono font-black border border-[#141414] hover:bg-[#141414] cursor-pointer"
+                            title="Confirm Terminate"
+                          >
+                            CONFIRM
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteQuestId(null)}
+                            className="px-2 py-0.5 bg-white text-[#141414] text-[10px] font-mono font-black border border-[#141414] hover:bg-[#EBE7DF] cursor-pointer"
+                            title="Cancel Terminate"
+                          >
+                            CANCEL
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteQuestId(q._id)}
+                          className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
+                        >
+                          DELETE
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -895,17 +938,37 @@ export const AdminPage = () => {
                               SAVE
                             </button>
                           )}
-                          <button
-                            onClick={() => {
-                              if (window.confirm(`Decommission asset "${item.name}" and delete its sprite file from disk?`)) {
-                                deleteItemMutation.mutate(item._id);
-                              }
-                            }}
-                            disabled={deleteItemMutation.isPending}
-                            className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
-                          >
-                            DELETE
-                          </button>
+                          {confirmDeleteItemId === item._id ? (
+                            <div className="inline-flex items-center gap-1 bg-[#FAF3E8] border border-[#141414] p-1 shadow-brutal-sm">
+                              <span className="text-[10px] font-mono font-black text-[#E8402C] px-1">DECOMMISSION?</span>
+                              <button
+                                onClick={() => {
+                                  setConfirmDeleteItemId(null);
+                                  deleteItemMutation.mutate(item._id);
+                                }}
+                                disabled={deleteItemMutation.isPending}
+                                className="px-2 py-0.5 bg-[#E8402C] text-white text-[10px] font-mono font-black border border-[#141414] hover:bg-[#141414] cursor-pointer"
+                                title="Confirm Decommission"
+                              >
+                                CONFIRM
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteItemId(null)}
+                                className="px-2 py-0.5 bg-white text-[#141414] text-[10px] font-mono font-black border border-[#141414] hover:bg-[#EBE7DF] cursor-pointer"
+                                title="Cancel Decommission"
+                              >
+                                CANCEL
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteItemId(item._id)}
+                              disabled={deleteItemMutation.isPending}
+                              className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
+                            >
+                              DELETE
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

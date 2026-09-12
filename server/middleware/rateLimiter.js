@@ -8,7 +8,7 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many authentication attempts. Please take a cozy breath and try again in 15 minutes.',
+    message: 'Rate limit exceeded: Too many authentication attempts. Access locked for 15 minutes.',
   },
 });
 

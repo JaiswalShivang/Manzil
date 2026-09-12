@@ -1,8 +1,16 @@
+import { useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { ArrowRight, Coins, Award } from 'lucide-react';
+import { triggerBauhausCelebration } from './CelebrationBurst';
 
 export const LevelUpModal = ({ isOpen, onClose, newLevel, bonusCoins = 25 }) => {
+  useEffect(() => {
+    if (isOpen) {
+      triggerBauhausCelebration();
+    }
+  }, [isOpen]);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-md">
       <div className="text-center py-2 flex flex-col items-center">

@@ -238,8 +238,8 @@ export const completeQuest = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: progressionResult.leveledUp
-        ? '🎉 Congratulations! You leveled up your cozy space!'
-        : '✨ Quest completed! Focus Points and Cozy Coins awarded.',
+        ? '🎉 PROMOTION DETECTED — CLEARANCE LEVEL ELEVATED!'
+        : '✨ DIRECTIVE COMPLETE — XP AND GOLD CREDITED',
       quest,
       nextRecurringQuest,
       rewards: {

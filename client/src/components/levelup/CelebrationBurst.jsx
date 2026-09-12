@@ -1,44 +1,71 @@
 import confetti from 'canvas-confetti';
 
 /**
- * Fires gentle pastel / warm firefly sparkles matching the cozy lo-fi palette
+ * Fires bold constructivist geometric confetti matching the Bauhaus primary palette:
+ * Cadmium Red (#E8402C), International Blue (#2B4AE8), Bauhaus Yellow (#F2B705), Ink Black (#141414), Bone (#F5F3EF).
+ * Strictly respects prefers-reduced-motion.
  */
-export const triggerCozyCelebration = () => {
-  // Firefly golden sparkles drift
+export const triggerBauhausCelebration = () => {
+  // Check prefers-reduced-motion
+  if (
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    return;
+  }
+
+  // Primary geometric burst
   confetti({
-    particleCount: 40,
-    spread: 70,
-    origin: { y: 0.7 },
-    colors: ['#F4C572', '#E3A08A', '#9CAF88', '#B9A6D9', '#FAF3E8'],
+    particleCount: 50,
+    spread: 80,
+    origin: { y: 0.65 },
+    colors: ['#E8402C', '#2B4AE8', '#F2B705', '#141414', '#F5F3EF'],
     ticks: 200,
-    gravity: 0.8,
-    decay: 0.94,
-    startVelocity: 25,
-    shapes: ['circle'],
+    gravity: 0.9,
+    decay: 0.92,
+    startVelocity: 30,
+    shapes: ['square', 'circle'],
     scalar: 1.2,
   });
 
-  // Secondary soft drift
+  // Secondary tactical flanking bursts
   setTimeout(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+
     confetti({
-      particleCount: 25,
+      particleCount: 30,
       angle: 60,
-      spread: 55,
-      origin: { x: 0.1, y: 0.8 },
-      colors: ['#F4C572', '#E3A08A', '#FAF3E8'],
+      spread: 50,
+      origin: { x: 0.1, y: 0.75 },
+      colors: ['#E8402C', '#F2B705', '#141414'],
       ticks: 220,
-      gravity: 0.7,
-      startVelocity: 20,
+      gravity: 0.85,
+      startVelocity: 24,
+      shapes: ['square'],
+      scalar: 1.1,
     });
+
     confetti({
-      particleCount: 25,
+      particleCount: 30,
       angle: 120,
-      spread: 55,
-      origin: { x: 0.9, y: 0.8 },
-      colors: ['#9CAF88', '#B9A6D9', '#FAF3E8'],
+      spread: 50,
+      origin: { x: 0.9, y: 0.75 },
+      colors: ['#2B4AE8', '#F2B705', '#F5F3EF'],
       ticks: 220,
-      gravity: 0.7,
-      startVelocity: 20,
+      gravity: 0.85,
+      startVelocity: 24,
+      shapes: ['square'],
+      scalar: 1.1,
     });
-  }, 200);
+  }, 180);
 };
+
+// Backwards compatibility alias
+export const triggerCozyCelebration = triggerBauhausCelebration;
