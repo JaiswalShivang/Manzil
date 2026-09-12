@@ -29,6 +29,20 @@ const setRefreshTokenCookie = (res, refreshToken) => {
   });
 };
 
+const formatUserResponse = (user) => ({
+  id: user._id,
+  username: user.username,
+  email: user.email,
+  role: user.role || 'user',
+  level: user.level,
+  currentXP: user.currentXP,
+  xpToNextLevel: user.xpToNextLevel,
+  cozyCoins: user.cozyCoins,
+  skills: user.skills,
+  streak: user.streak,
+  inventory: user.inventory,
+});
+
 export const register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
@@ -49,6 +63,7 @@ export const register = async (req, res, next) => {
       username,
       email: email.toLowerCase(),
       passwordHash: password,
+      role: 'user',
       level: 1,
       currentXP: 0,
       cozyCoins: 60,
@@ -77,20 +92,9 @@ export const register = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Welcome to your cozy study room!',
+      message: 'Agent commissioned successfully.',
       accessToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        level: user.level,
-        currentXP: user.currentXP,
-        xpToNextLevel: user.xpToNextLevel,
-        cozyCoins: user.cozyCoins,
-        skills: user.skills,
-        streak: user.streak,
-        inventory: user.inventory,
-      },
+      user: formatUserResponse(user),
     });
   } catch (error) {
     next(error);
@@ -100,8 +104,9 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email?.toLowerCase().trim();
 
-    const user = await User.findOne({ email: email.toLowerCase() }).populate('inventory.itemId');
+    const user = await User.findOne({ email: normalizedEmail }).populate('inventory.itemId');
 
     if (!user) {
       return res.status(401).json({
@@ -129,20 +134,9 @@ export const login = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: `Welcome back, ${user.username}! ✨`,
+      message: `Welcome back, ${user.username}!`,
       accessToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        level: user.level,
-        currentXP: user.currentXP,
-        xpToNextLevel: user.xpToNextLevel,
-        cozyCoins: user.cozyCoins,
-        skills: user.skills,
-        streak: user.streak,
-        inventory: user.inventory,
-      },
+      user: formatUserResponse(user),
     });
   } catch (error) {
     next(error);
@@ -166,7 +160,7 @@ export const refresh = async (req, res, next) => {
         refreshToken,
         process.env.JWT_REFRESH_SECRET || 'cozy_lofi_study_room_jwt_refresh_secret_2024'
       );
-    } catch (err) {
+    } catch {
       return res.status(401).json({
         success: false,
         message: 'Refresh token expired or invalid, please log in again',
@@ -201,18 +195,7 @@ export const refresh = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       accessToken: newAccessToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        level: user.level,
-        currentXP: user.currentXP,
-        xpToNextLevel: user.xpToNextLevel,
-        cozyCoins: user.cozyCoins,
-        skills: user.skills,
-        streak: user.streak,
-        inventory: user.inventory,
-      },
+      user: formatUserResponse(user),
     });
   } catch (error) {
     next(error);
@@ -230,7 +213,8 @@ export const logout = async (req, res, next) => {
           process.env.JWT_REFRESH_SECRET || 'cozy_lofi_study_room_jwt_refresh_secret_2024'
         );
         await User.findByIdAndUpdate(decoded.id, { refreshTokenHash: null });
-      } catch (e) {
+      } catch {
+        // token was expired or invalid
       }
     }
 
@@ -244,7 +228,7 @@ export const logout = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Logged out successfully. See you next study session! 🕯️',
+      message: 'Logged out successfully.',
     });
   } catch (error) {
     next(error);

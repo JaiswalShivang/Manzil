@@ -74,6 +74,11 @@ const userSchema = new mongoose.Schema(
       count: { type: Number, default: 0 },
       lastCompletedDate: { type: Date, default: null },
     },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
     inventory: [inventoryItemSchema],
     refreshTokenHash: {
       type: String,

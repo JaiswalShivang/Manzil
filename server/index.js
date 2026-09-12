@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import questRoutes from './routes/questRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -71,6 +72,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/quests', questRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use('/api/*', (req, res) => {
   res.status(404).json({
