@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Lock, Coins, Check, Scissors, Shirt, Footprints, Sword, Sparkles } from 'lucide-react';
 import { PantsIcon } from '../ui/PantsIcon';
 
@@ -11,7 +12,7 @@ const slotIcons = {
   crystal: Sparkles,
 };
 
-export const ShopItemCard = ({
+const ShopItemCardComponent = ({
   item,
   userLevel = 1,
   userCoins = 0,
@@ -34,12 +35,12 @@ export const ShopItemCard = ({
 
   return (
     <div
-      className={`relative border-3 border-[#141414] p-5 flex flex-col justify-between overflow-hidden ${
+      className={`relative border-3 border-[#141414] p-5 flex flex-col justify-between overflow-hidden transition-none ${
         isLevelLocked && !isOwned
           ? 'bg-[#141414] shadow-brutal'
           : isEquipped
-          ? 'bg-[#FAF3E8] shadow-brutal-lg ring-2 ring-[#2B4AE8] card-hover-brutal'
-          : 'bg-[#FAF3E8] shadow-brutal hover:bg-white card-hover-brutal'
+          ? 'bg-[#FAF3E8] shadow-brutal-lg ring-2 ring-[#2B4AE8]'
+          : 'bg-[#FAF3E8] shadow-brutal hover:bg-white'
       }`}
     >
       {/* Locked Solid Diagonal Striped Overlay - Zero Bleed-Through */}
@@ -140,7 +141,7 @@ export const ShopItemCard = ({
                 type="button"
                 onClick={() => onUnequip(targetSlot, item._id)}
                 disabled={isProcessing}
-                className="px-3 py-1.5 bg-[#2B4AE8] hover:bg-[#E8402C] text-white border-2 border-[#141414] text-xs font-mono font-black uppercase cursor-pointer transition-none shadow-brutal-sm flex items-center gap-1.5 group"
+                className="px-3 py-1.5 bg-[#2B4AE8] hover:bg-[#E8402C] text-white border-2 border-[#141414] text-xs font-mono font-black uppercase cursor-pointer transition-none shadow-brutal-sm flex items-center gap-1.5 group disabled:opacity-50"
                 title="Click to unequip this item"
               >
                 <Check className="w-3.5 h-3.5 stroke-[3] group-hover:hidden" />
@@ -151,9 +152,9 @@ export const ShopItemCard = ({
               <button
                 onClick={() => onEquip(item._id)}
                 disabled={isProcessing}
-                className="px-3 py-1.5 bg-[#F2B705] hover:bg-[#141414] text-[#141414] hover:text-white border-2 border-[#141414] text-xs font-mono font-black uppercase cursor-pointer transition-none shadow-brutal-sm"
+                className="px-3 py-1.5 bg-[#F2B705] hover:bg-[#141414] text-[#141414] hover:text-white border-2 border-[#141414] text-xs font-mono font-black uppercase cursor-pointer transition-none shadow-brutal-sm disabled:opacity-50"
               >
-                EQUIP →
+                {isProcessing ? 'EQUIPPING...' : 'EQUIP →'}
               </button>
             )
           ) : (
@@ -165,10 +166,16 @@ export const ShopItemCard = ({
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : !canAfford
                   ? 'bg-[#EBE7DF] text-[#141414]/50 cursor-not-allowed'
-                  : 'bg-[#E8402C] hover:bg-[#141414] text-white shadow-brutal-sm'
+                  : 'bg-[#E8402C] hover:bg-[#141414] text-white shadow-brutal-sm disabled:opacity-50'
               }`}
             >
-              {isLevelLocked ? 'LOCKED' : !canAfford ? 'NEED GOLD' : 'BUY →'}
+              {isProcessing
+                ? 'ACQUIRING...'
+                : isLevelLocked
+                ? 'LOCKED'
+                : !canAfford
+                ? 'NEED GOLD'
+                : 'BUY →'}
             </button>
           )}
         </div>
@@ -177,4 +184,5 @@ export const ShopItemCard = ({
   );
 };
 
+export const ShopItemCard = memo(ShopItemCardComponent);
 export default ShopItemCard;

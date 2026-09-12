@@ -1,4 +1,6 @@
 
+import { memo } from 'react';
+
 /**
  * Avatar Paperdoll Component
  *
@@ -13,7 +15,7 @@
  *
  * Synchronized spriteWalk animation with steps(4) snapping.
  */
-export const Avatar = ({ equipped = {}, scale = 4, className = '' }) => {
+const AvatarComponent = ({ equipped = {}, scale = 4, className = '' }) => {
   // Normalize equipped items whether populated objects or raw string URLs
   const getUrl = (slot) => {
     const item = equipped?.[slot];
@@ -137,4 +139,5 @@ export const Avatar = ({ equipped = {}, scale = 4, className = '' }) => {
   );
 };
 
+export const Avatar = memo(AvatarComponent);
 export default Avatar;

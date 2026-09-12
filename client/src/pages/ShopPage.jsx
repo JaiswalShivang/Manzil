@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '../api/client';
@@ -23,7 +23,7 @@ export const ShopPage = () => {
   const [activeSlot, setActiveSlot] = useState('hair');
   const [notification, setNotification] = useState(null);
 
-  // Synchronize latest user profile and inventory on mount
+  // Synchronize latest user profile and inventory on initial mount
   useEffect(() => {
     if (refreshUser) {
       refreshUser();
@@ -38,11 +38,12 @@ export const ShopPage = () => {
       const res = await api.get(url);
       return res.data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
-  const shopItems = shopData?.items || [];
+  const shopItems = useMemo(() => shopData?.items || [], [shopData?.items]);
 
-  // Determine owned item IDs reliably (handles subdocuments, populated objects, or raw IDs)
+  // Extract canonical item ID from any inventory representation
   const getItemId = (inv) => {
     if (!inv) return null;
     if (inv.itemId) {
@@ -54,23 +55,32 @@ export const ShopPage = () => {
     return inv.toString();
   };
 
-  const inventory = user?.inventory || [];
-  const ownedItemIds = new Set(inventory.map(getItemId).filter(Boolean));
+  const inventory = user?.inventory;
+  const ownedItemIds = useMemo(() => {
+    return new Set((inventory || []).map(getItemId).filter(Boolean));
+  }, [inventory]);
 
   // Determine equipped items via user.equipped
-  const userEquipped = user?.equipped || {
-    hair: null,
-    chest: null,
-    pants: null,
-    shoes: null,
-    weapon: null,
-    aura: null,
-  };
+  const userEquipped = useMemo(() => {
+    return (
+      user?.equipped || {
+        hair: null,
+        chest: null,
+        pants: null,
+        shoes: null,
+        weapon: null,
+        aura: null,
+      }
+    );
+  }, [user?.equipped]);
 
-  const getEquippedIdForSlot = (slot) => {
-    const val = userEquipped[slot];
-    return (val?._id || val)?.toString() || null;
-  };
+  const getEquippedIdForSlot = useCallback(
+    (slot) => {
+      const val = userEquipped[slot];
+      return (val?._id || val)?.toString() || null;
+    },
+    [userEquipped]
+  );
 
   // Purchase Item Mutation with instant optimistic update
   const purchaseMutation = useMutation({
@@ -100,9 +110,6 @@ export const ShopPage = () => {
     onSuccess: (data) => {
       if (data.user) {
         updateUserData(data.user);
-      }
-      if (refreshUser) {
-        refreshUser();
       }
       setNotification({
         type: 'success',
@@ -143,9 +150,6 @@ export const ShopPage = () => {
     onSuccess: (data) => {
       if (data.user) {
         updateUserData(data.user);
-      }
-      if (refreshUser) {
-        refreshUser();
       }
       setNotification({
         type: 'success',
@@ -192,9 +196,6 @@ export const ShopPage = () => {
       if (data.user) {
         updateUserData(data.user);
       }
-      if (refreshUser) {
-        refreshUser();
-      }
       setNotification({
         type: 'success',
         message: data.message || 'EQUIPMENT DEMOUNTED',
@@ -211,7 +212,31 @@ export const ShopPage = () => {
     },
   });
 
-  const isProcessing = false;
+  const handlePurchase = useCallback(
+    (id) => {
+      purchaseMutation.mutate(id);
+    },
+    [purchaseMutation]
+  );
+
+  const handleEquip = useCallback(
+    (id) => {
+      equipMutation.mutate(id);
+    },
+    [equipMutation]
+  );
+
+  const handleUnequip = useCallback(
+    (slot, id) => {
+      unequipMutation.mutate({ itemType: slot, itemId: id });
+    },
+    [unequipMutation]
+  );
+
+  const pendingItemId =
+    purchaseMutation.variables ||
+    equipMutation.variables ||
+    unequipMutation.variables?.itemId;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -345,10 +370,10 @@ export const ShopPage = () => {
                 userCoins={user?.cozyCoins || 0}
                 isOwned={isOwned}
                 isEquipped={isEquipped}
-                onPurchase={(id) => purchaseMutation.mutate(id)}
-                onEquip={(id) => equipMutation.mutate(id)}
-                onUnequip={(slot, id) => unequipMutation.mutate({ itemType: slot, itemId: id })}
-                isProcessing={isProcessing}
+                onPurchase={handlePurchase}
+                onEquip={handleEquip}
+                onUnequip={handleUnequip}
+                isProcessing={pendingItemId === item._id}
               />
             );
           })}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api, { setAccessToken } from '../api/client';
 
 const AuthContext = createContext(null);
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login handler
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     setError(null);
     try {
       const res = await api.post('/auth/login', { email, password });
@@ -53,10 +53,10 @@ export const AuthProvider = ({ children }) => {
       setError(msg);
       return { success: false, message: msg };
     }
-  };
+  }, []);
 
   // Register handler
-  const register = async (username, email, password) => {
+  const register = useCallback(async (username, email, password) => {
     setError(null);
     try {
       const res = await api.post('/auth/register', { username, email, password });
@@ -71,10 +71,10 @@ export const AuthProvider = ({ children }) => {
       setError(msg);
       return { success: false, message: msg };
     }
-  };
+  }, []);
 
   // Logout handler
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout');
     } catch (err) {
@@ -83,10 +83,10 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(null);
       setUser(null);
     }
-  };
+  }, []);
 
   // Refetch user profile
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       const res = await api.get('/users/me');
       if (res.data?.success) {
@@ -95,30 +95,29 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Failed to refresh user:', err);
     }
-  };
+  }, []);
 
   // Direct updater for optimistic UI
-  const updateUserData = (updatedFields) => {
+  const updateUserData = useCallback((updatedFields) => {
     setUser((prev) => (prev ? { ...prev, ...updatedFields } : prev));
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        error,
-        login,
-        register,
-        logout,
-        refreshUser,
-        updateUserData,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      error,
+      login,
+      register,
+      logout,
+      refreshUser,
+      updateUserData,
+    }),
+    [user, isLoading, error, login, register, logout, refreshUser, updateUserData]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
