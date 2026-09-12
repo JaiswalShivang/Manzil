@@ -1,11 +1,132 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Navbar } from './components/layout/Navbar';
+import { Footer } from './components/layout/Footer';
+import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { QuestLogPage } from './pages/QuestLogPage';
+import { ShopPage } from './pages/ShopPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { Skeleton } from './components/ui/Skeleton';
 
-import './App.css'
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 2,
+      retry: 1,
+    },
+  },
+});
 
-function App() {
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 space-y-4">
+        <span className="text-3xl animate-bounce">☕</span>
+        <Skeleton width="w-48" height="h-4" rounded="rounded-full" />
+        <p className="text-xs text-[#78665B] font-handwritten text-base">Warming up your study room...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const PublicOnlyRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
+function AppRoutes() {
   return (
-    <div>helllo</div>
-  )
+    <div className="min-h-screen flex flex-col bg-[#FAF3E8] text-[#3A2E27]">
+      <Navbar />
+      <main className="flex-1 pb-16 md:pb-8">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route
+            path="/login"
+            element={
+              <PublicOnlyRoute>
+                <LoginPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnlyRoute>
+                <RegisterPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quests"
+            element={
+              <ProtectedRoute>
+                <QuestLogPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <ProtectedRoute>
+                <ShopPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
