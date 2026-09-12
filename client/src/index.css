@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #FAF3E8;
+  --color-beige: #F0E4D3;
+  --color-beige-dark: #E4D3BE;
+  --color-ink: #3A2E27;
+  --color-ink-muted: #78665B;
+  --color-terracotta: #E3A08A;
+  --color-sage: #9CAF88;
+  --color-lavender: #B9A6D9;
+  --color-amber: #F4C572;
+  --shadow-cozy: 0 4px 16px rgba(58, 46, 39, 0.1);
+  --shadow-cozy-lg: 0 10px 30px -4px rgba(58, 46, 39, 0.14);
+}
+
+body {
+  margin: 0;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #FAF3E8;
+  color: #3A2E27;
+  overflow-x: hidden;
+}
+
+/* Handwritten font utility */
+.font-handwritten {
+  font-family: 'Caveat', cursive;
+}
+
+/* Soft paper texture & desk widgets */
+.cozy-card {
+  background: #F0E4D3;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(58, 46, 39, 0.08);
+  border: 1px solid rgba(228, 211, 190, 0.7);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cozy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(58, 46, 39, 0.12);
+}
+
+/* Sticky note style */
+.sticky-note {
+  background: #FFF9E6;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(58, 46, 39, 0.09);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sticky-note::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 14px;
+  background: rgba(227, 160, 138, 0.45);
+  border-radius: 2px;
+}
+
+/* Custom cozy scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF3E8;
+}
+::-webkit-scrollbar-thumb {
+  background: #E4D3BE;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D4B996;
+}
+
+/* Soft shimmer skeleton */
+@keyframes cozy-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-cozy {
+  background: linear-gradient(90deg, #F0E4D3 25%, #FAF3E8 50%, #F0E4D3 75%);
+  background-size: 200% 100%;
+  animation: cozy-shimmer 1.8s infinite ease-in-out;
+}
+
+/* Candle flame subtle flicker */
+@keyframes candle-flicker {
+  0%, 100% { transform: scale(1) rotate(-1deg); opacity: 0.95; }
+  25% { transform: scale(1.08) rotate(1.5deg); opacity: 1; }
+  50% { transform: scale(0.96) rotate(-0.5deg); opacity: 0.9; }
+  75% { transform: scale(1.04) rotate(0.8deg); opacity: 0.98; }
+}
+
+.animate-flicker {
+  animation: candle-flicker 2.5s infinite ease-in-out;
+  transform-origin: bottom center;
+}
+
+/* Steam rising animation */
+@keyframes steam-rise {
+  0% { transform: translateY(0) scaleX(1); opacity: 0; }
+  40% { opacity: 0.7; }
+  100% { transform: translateY(-16px) scaleX(1.3); opacity: 0; }
+}
+
+.animate-steam {
+  animation: steam-rise 2.8s infinite ease-out;
+}
+
+/* Warm glow pulse */
+@keyframes warm-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(244, 197, 114, 0.35); }
+  50% { box-shadow: 0 0 25px rgba(244, 197, 114, 0.65); }
+}
+
+.animate-warm-glow {
+  animation: warm-pulse 3s infinite ease-in-out;
+}
+
+/* Focus rings accessible and warm */
+*:focus-visible {
+  outline: 2px solid #E3A08A;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
