@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Sparkles, Moon, Sun, CloudRain } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Moon, Sun, CloudRain } from 'lucide-react';
 
 export const StudyRoomScene = ({ user }) => {
   const [lampOn, setLampOn] = useState(true);
@@ -95,11 +95,10 @@ export const StudyRoomScene = ({ user }) => {
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-[#FAF3E8]/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-[#E4D3BE] text-xs text-[#78665B] shadow-sm">
         <button
           onClick={() => setLampOn(!lampOn)}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
-            lampOn
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${lampOn
               ? 'bg-[#F4C572]/30 text-[#855D16] font-bold shadow-xs'
               : 'hover:bg-[#F0E4D3] text-[#78665B]'
-          }`}
+            }`}
           title="Toggle Desk Lamp"
         >
           <span>💡</span>
@@ -108,11 +107,10 @@ export const StudyRoomScene = ({ user }) => {
 
         <button
           onClick={() => setIsRaining(!isRaining)}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
-            isRaining
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${isRaining
               ? 'bg-[#9CAF88]/25 text-[#4D6339] font-bold shadow-xs'
               : 'hover:bg-[#F0E4D3] text-[#78665B]'
-          }`}
+            }`}
           title="Toggle Window Rain"
         >
           <CloudRain className="w-3.5 h-3.5" />
@@ -581,8 +579,8 @@ export const StudyRoomScene = ({ user }) => {
               equippedMug?.imageKey === 'matcha_latte_mug'
                 ? '#9CAF88'
                 : equippedMug?.imageKey === 'hot_cocoa_mug'
-                ? '#78665B'
-                : '#E3A08A'
+                  ? '#78665B'
+                  : '#E3A08A'
             }
           />
           <path d="M26,8 C32,8 32,20 26,20" stroke="#E3A08A" strokeWidth="3" fill="none" />
@@ -595,8 +593,8 @@ export const StudyRoomScene = ({ user }) => {
               equippedMug?.imageKey === 'matcha_latte_mug'
                 ? '#5F7A4D'
                 : equippedMug?.imageKey === 'hot_cocoa_mug'
-                ? '#4A3B32'
-                : '#B97C47'
+                  ? '#4A3B32'
+                  : '#B97C47'
             }
           />
         </g>

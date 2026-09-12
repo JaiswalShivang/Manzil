@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { AmbientSound } from './AmbientSound';
@@ -41,11 +41,10 @@ export const Navbar = () => {
 
   return (
     <header
-      className={`sticky top-0 z-40 transition-all duration-300 ${
-        isScrolled
+      className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled
           ? 'bg-[#FAF3E8]/95 backdrop-blur-md shadow-[0_4px_16px_rgba(58,46,39,0.08)] border-b border-[#E4D3BE]'
           : 'bg-[#FAF3E8]/80 backdrop-blur-sm border-b border-[#E4D3BE]/50'
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo */}
@@ -73,11 +72,10 @@ export const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
                       ? 'bg-[#FAF3E8] text-[#3A2E27] shadow-sm font-semibold'
                       : 'text-[#78665B] hover:text-[#3A2E27] hover:bg-[#FAF3E8]/50'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {link.name}
@@ -155,9 +153,8 @@ export const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-[#3A2E27] font-bold' : 'text-[#78665B]'
-                }`}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-medium transition-colors ${isActive ? 'text-[#3A2E27] font-bold' : 'text-[#78665B]'
+                  }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'text-[#E3A08A]' : ''}`} />
                 {link.name}

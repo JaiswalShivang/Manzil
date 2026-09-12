@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
@@ -7,17 +7,11 @@ import {
   Sparkles,
   Flame,
   Store,
-  Compass,
   CheckCircle2,
-  Coffee,
   Heart,
   BookOpen,
   ArrowRight,
-  Shield,
-  ScrollText,
-  Calendar,
-  Layers,
-  Award,
+  Shield
 } from 'lucide-react';
 
 // Animated Count-Up Number Component
@@ -263,21 +257,19 @@ export const LandingPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.12 }}
                 onClick={() => setActiveStep(idx)}
-                className={`relative rounded-3xl p-6 sm:p-7 border cursor-pointer transition-all duration-300 flex flex-col justify-between ${
-                  isSelected
+                className={`relative rounded-3xl p-6 sm:p-7 border cursor-pointer transition-all duration-300 flex flex-col justify-between ${isSelected
                     ? 'bg-[#F0E4D3] border-[#E3A08A] shadow-[0_8px_24px_rgba(58,46,39,0.1)] -translate-y-1.5'
                     : 'bg-[#FAF3E8] border-[#E4D3BE] hover:bg-[#F0E4D3]/70 hover:-translate-y-1'
-                }`}
+                  }`}
               >
                 <div>
                   {/* Step Numeral Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-xs transition-colors ${
-                        isSelected
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-xs transition-colors ${isSelected
                           ? 'bg-[#E3A08A] text-[#3A2E27] shadow-[0_4px_12px_rgba(227,160,138,0.3)]'
                           : 'bg-[#F0E4D3] text-[#78665B] border border-[#E4D3BE]'
-                      }`}
+                        }`}
                     >
                       {item.step}
                     </div>
