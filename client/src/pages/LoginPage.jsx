@@ -9,6 +9,8 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [confirmationMsg, setConfirmationMsg] = useState(null);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,20 +18,47 @@ export const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
+    setFieldErrors({});
+    setConfirmationMsg(null);
 
-    if (!email || !password) {
-      setFormError('PLEASE SPECIFY BOTH EMAIL AND ACCESS CODE');
+    const errors = {};
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      errors.email = 'AGENT IDENTIFIER (EMAIL) IS REQUIRED';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      errors.email = 'PLEASE PROVIDE A VALID EMAIL ADDRESS';
+    }
+
+    if (!password) {
+      errors.password = 'ACCESS PASSCODE IS REQUIRED';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError('PLEASE RESOLVE HIGHLIGHTED CREDENTIAL ERRORS');
       return;
     }
 
     setIsSubmitting(true);
-    const result = await login(email, password);
+    const result = await login(trimmedEmail, password);
     setIsSubmitting(false);
 
     if (result.success) {
-      navigate('/dashboard');
+      setConfirmationMsg(
+        result.message ? result.message.toUpperCase() : 'ACCESS GRANTED — WELCOME BACK, OPERATIVE!'
+      );
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 600);
     } else {
-      setFormError(result.message.toUpperCase());
+      const upperMsg = result.message ? result.message.toUpperCase() : 'AUTHENTICATION FAILED';
+      setFormError(upperMsg);
+      if (result.field === 'email') {
+        setFieldErrors({ email: upperMsg });
+      } else if (result.field === 'password') {
+        setFieldErrors({ password: upperMsg });
+      }
     }
   };
 
@@ -58,9 +87,18 @@ export const LoginPage = () => {
           </p>
         </div>
 
+        {/* Success Confirmation Banner */}
+        {confirmationMsg && (
+          <div className="mb-6 p-3.5 bg-[#141414] border-2 border-[#141414] text-[#F2B705] font-mono text-xs font-bold uppercase shadow-brutal flex items-center gap-2">
+            <span className="w-2 h-2 bg-[#F2B705] inline-block animate-ping" />
+            <span>// SUCCESS: {confirmationMsg}</span>
+          </div>
+        )}
+
+        {/* Error Notification Banner */}
         {formError && (
-          <div className="mb-6 p-3 bg-[#E8402C] border-2 border-[#141414] text-white font-mono text-xs font-bold uppercase shadow-brutal">
-            // ERROR: {formError}
+          <div className="mb-6 p-3.5 bg-[#E8402C] border-2 border-[#141414] text-white font-mono text-xs font-bold uppercase shadow-brutal">
+            // REJECTION NOTICE: {formError}
           </div>
         )}
 
@@ -70,7 +108,12 @@ export const LoginPage = () => {
             type="email"
             placeholder="agent@manzil.io"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: null }));
+              if (formError) setFormError(null);
+            }}
+            error={fieldErrors.email}
             required
             autoComplete="email"
           />
@@ -80,7 +123,12 @@ export const LoginPage = () => {
             type="password"
             placeholder="••••••••••••"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: null }));
+              if (formError) setFormError(null);
+            }}
+            error={fieldErrors.password}
             required
             autoComplete="current-password"
           />
@@ -90,9 +138,13 @@ export const LoginPage = () => {
             variant="danger"
             size="lg"
             className="w-full justify-center font-mono font-black uppercase text-sm mt-4 cursor-pointer"
-            disabled={isSubmitting}
+            disabled={isSubmitting || Boolean(confirmationMsg)}
           >
-            {isSubmitting ? 'VERIFYING CREDENTIALS...' : 'AUTHENTICATE & ENTER HQ →'}
+            {confirmationMsg
+              ? 'REDIRECTING TO HQ...'
+              : isSubmitting
+              ? 'VERIFYING CREDENTIALS...'
+              : 'AUTHENTICATE & ENTER HQ →'}
           </Button>
         </form>
 

@@ -10,6 +10,8 @@ export const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [confirmationMsg, setConfirmationMsg] = useState(null);
 
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -17,30 +19,64 @@ export const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
+    setFieldErrors({});
+    setConfirmationMsg(null);
 
-    if (!username || !email || !password) {
-      setFormError('ALL PARAMETERS REQUIRED FOR COMMISSIONING');
-      return;
+    const errors = {};
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedUsername) {
+      errors.username = 'OPERATIONAL CODENAME IS REQUIRED';
+    } else if (trimmedUsername.length < 3) {
+      errors.username = 'CODENAME MUST CONTAIN AT LEAST 3 CHARACTERS';
+    } else if (trimmedUsername.length > 30) {
+      errors.username = 'CODENAME CANNOT EXCEED 30 CHARACTERS';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(trimmedUsername)) {
+      errors.username = 'CODENAME CAN ONLY CONTAIN LETTERS, NUMBERS, AND UNDERSCORES';
     }
 
-    if (username.length < 3) {
-      setFormError('CODENAME MUST CONTAIN AT LEAST 3 CHARACTERS');
-      return;
+    if (!trimmedEmail) {
+      errors.email = 'COMMUNICATION CHANNEL (EMAIL) IS REQUIRED';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      errors.email = 'PLEASE PROVIDE A VALID EMAIL ADDRESS';
     }
 
-    if (password.length < 6) {
-      setFormError('PASSCODE REQUIRES A MINIMUM OF 6 CHARACTERS');
+    if (!password) {
+      errors.password = 'SECURITY PASSCODE IS REQUIRED';
+    } else if (password.length < 6) {
+      errors.password = 'PASSCODE REQUIRES A MINIMUM OF 6 CHARACTERS';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError('PLEASE RESOLVE HIGHLIGHTED ENLISTMENT PARAMETERS');
       return;
     }
 
     setIsSubmitting(true);
-    const result = await register(username, email, password);
+    const result = await register(trimmedUsername, trimmedEmail, password);
     setIsSubmitting(false);
 
     if (result.success) {
-      navigate('/dashboard');
+      setConfirmationMsg(
+        result.message
+          ? result.message.toUpperCase()
+          : `AGENT ${trimmedUsername.toUpperCase()} COMMISSIONED WITH 60 GOLD CREDITS!`
+      );
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 700);
     } else {
-      setFormError(result.message.toUpperCase());
+      const upperMsg = result.message ? result.message.toUpperCase() : 'COMMISSIONING REJECTED';
+      setFormError(upperMsg);
+      if (result.field === 'username') {
+        setFieldErrors({ username: upperMsg });
+      } else if (result.field === 'email') {
+        setFieldErrors({ email: upperMsg });
+      } else if (result.field === 'password') {
+        setFieldErrors({ password: upperMsg });
+      }
     }
   };
 
@@ -69,9 +105,18 @@ export const RegisterPage = () => {
           </p>
         </div>
 
+        {/* Success Confirmation Banner */}
+        {confirmationMsg && (
+          <div className="mb-6 p-3.5 bg-[#141414] border-2 border-[#141414] text-[#2B4AE8] font-mono text-xs font-bold uppercase shadow-brutal flex items-center gap-2">
+            <span className="w-2 h-2 bg-[#2B4AE8] inline-block animate-ping" />
+            <span className="text-white">// CONFIRMATION: {confirmationMsg}</span>
+          </div>
+        )}
+
+        {/* Error Notification Banner */}
         {formError && (
-          <div className="mb-6 p-3 bg-[#E8402C] border-2 border-[#141414] text-white font-mono text-xs font-bold uppercase shadow-brutal">
-            // ERROR: {formError}
+          <div className="mb-6 p-3.5 bg-[#E8402C] border-2 border-[#141414] text-white font-mono text-xs font-bold uppercase shadow-brutal">
+            // COMMISSIONING REJECTED: {formError}
           </div>
         )}
 
@@ -81,7 +126,12 @@ export const RegisterPage = () => {
             type="text"
             placeholder="CODENAME_01"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: null }));
+              if (formError) setFormError(null);
+            }}
+            error={fieldErrors.username}
             required
             autoComplete="username"
           />
@@ -91,7 +141,12 @@ export const RegisterPage = () => {
             type="email"
             placeholder="agent@manzil.io"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: null }));
+              if (formError) setFormError(null);
+            }}
+            error={fieldErrors.email}
             required
             autoComplete="email"
           />
@@ -101,7 +156,12 @@ export const RegisterPage = () => {
             type="password"
             placeholder="••••••••••••"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: null }));
+              if (formError) setFormError(null);
+            }}
+            error={fieldErrors.password}
             required
             autoComplete="new-password"
           />
@@ -111,9 +171,13 @@ export const RegisterPage = () => {
             variant="primary"
             size="lg"
             className="w-full justify-center font-mono font-black uppercase text-sm mt-4 cursor-pointer"
-            disabled={isSubmitting}
+            disabled={isSubmitting || Boolean(confirmationMsg)}
           >
-            {isSubmitting ? 'COMMISSIONING AGENT...' : 'INITIALIZE PROFILE & LAUNCH →'}
+            {confirmationMsg
+              ? 'LAUNCHING HQ...'
+              : isSubmitting
+              ? 'COMMISSIONING AGENT...'
+              : 'INITIALIZE PROFILE & LAUNCH →'}
           </Button>
         </form>
 

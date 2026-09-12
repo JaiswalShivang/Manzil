@@ -55,7 +55,20 @@ export const createQuestSchema = z.object({
       errorMap: () => ({ message: 'Category must be intellect, vitality, discipline, or creativity' }),
     }),
     isRecurring: z.boolean().optional().default(false),
-    dueDate: z.string().optional().nullable(),
+    dueDate: z
+      .string()
+      .optional()
+      .nullable()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          const target = new Date(val);
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0);
+          return target >= startOfToday;
+        },
+        { message: 'Quest deadline cannot be set to a past date' }
+      ),
   }),
 });
 
@@ -65,6 +78,19 @@ export const updateQuestSchema = z.object({
     description: z.string().trim().max(500).optional(),
     category: z.enum(['intellect', 'vitality', 'discipline', 'creativity']).optional(),
     isRecurring: z.boolean().optional(),
-    dueDate: z.string().optional().nullable(),
+    dueDate: z
+      .string()
+      .optional()
+      .nullable()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          const target = new Date(val);
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0);
+          return target >= startOfToday;
+        },
+        { message: 'Quest deadline cannot be set to a past date' }
+      ),
   }),
 });

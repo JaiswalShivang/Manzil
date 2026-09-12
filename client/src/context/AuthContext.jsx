@@ -45,13 +45,21 @@ export const AuthProvider = ({ children }) => {
       if (res.data?.success) {
         setAccessToken(res.data.accessToken);
         setUser(res.data.user);
-        return { success: true, user: res.data.user };
+        return {
+          success: true,
+          message: res.data.message || 'Authentication verified',
+          user: res.data.user,
+        };
       }
       return { success: false, message: 'Login failed' };
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        'Login failed. Please check your credentials.';
+      const field = err.response?.data?.field || err.response?.data?.errors?.[0]?.field;
       setError(msg);
-      return { success: false, message: msg };
+      return { success: false, message: msg, field };
     }
   }, []);
 
@@ -63,13 +71,21 @@ export const AuthProvider = ({ children }) => {
       if (res.data?.success) {
         setAccessToken(res.data.accessToken);
         setUser(res.data.user);
-        return { success: true, user: res.data.user };
+        return {
+          success: true,
+          message: res.data.message || 'Agent commissioned successfully',
+          user: res.data.user,
+        };
       }
       return { success: false, message: 'Registration failed' };
     } catch (err) {
-      const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        'Registration failed. Please try again.';
+      const field = err.response?.data?.field || err.response?.data?.errors?.[0]?.field;
       setError(msg);
-      return { success: false, message: msg };
+      return { success: false, message: msg, field };
     }
   }, []);
 

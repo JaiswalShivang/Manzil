@@ -51,6 +51,20 @@ export const createQuest = async (req, res, next) => {
 
     const baseRewards = getBaseRewards(category);
 
+    let parsedDueDate = null;
+    if (dueDate) {
+      const parsed = new Date(dueDate);
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      if (parsed < startOfToday) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid deadline: Quest deadline cannot be set to a past date.',
+        });
+      }
+      parsedDueDate = parsed;
+    }
+
     const quest = new Quest({
       userId: req.user._id,
       title: title.trim(),
@@ -59,7 +73,7 @@ export const createQuest = async (req, res, next) => {
       xpReward: baseRewards.xp,
       coinReward: baseRewards.coins,
       isRecurring: Boolean(isRecurring),
-      dueDate: dueDate ? new Date(dueDate) : null,
+      dueDate: parsedDueDate,
       status: 'pending',
     });
 
@@ -112,7 +126,22 @@ export const updateQuest = async (req, res, next) => {
       quest.coinReward = rewards.coins;
     }
     if (isRecurring !== undefined) quest.isRecurring = Boolean(isRecurring);
-    if (dueDate !== undefined) quest.dueDate = dueDate ? new Date(dueDate) : null;
+    if (dueDate !== undefined) {
+      if (dueDate) {
+        const parsed = new Date(dueDate);
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        if (parsed < startOfToday) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid deadline: Quest deadline cannot be set to a past date.',
+          });
+        }
+        quest.dueDate = parsed;
+      } else {
+        quest.dueDate = null;
+      }
+    }
 
     await quest.save();
 

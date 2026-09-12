@@ -35,6 +35,16 @@ const QuestFormContent = ({ initialData, onSubmit, onClose, isSubmitting }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [category, setCategory] = useState(initialData?.category || 'intellect');
+  const getTodayDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getTodayDateString();
+
   const [dueDate, setDueDate] = useState(
     initialData?.dueDate
       ? new Date(initialData.dueDate).toISOString().split('T')[0]
@@ -51,6 +61,10 @@ const QuestFormContent = ({ initialData, onSubmit, onClose, isSubmitting }) => {
       newErrors.title = 'TITLE REQUIRED';
     } else if (title.trim().length > 120) {
       newErrors.title = 'MAX 120 CHARACTERS';
+    }
+
+    if (dueDate && dueDate < todayStr) {
+      newErrors.dueDate = 'DEADLINE CANNOT BE SET TO A PAST DATE';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -123,10 +137,17 @@ const QuestFormContent = ({ initialData, onSubmit, onClose, isSubmitting }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
         <Input
-          label="Deadline Date"
+          label="Deadline Date (Today or Future)"
           type="date"
+          min={todayStr}
           value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
+          onChange={(e) => {
+            setDueDate(e.target.value);
+            if (errors.dueDate) {
+              setErrors((prev) => ({ ...prev, dueDate: null }));
+            }
+          }}
+          error={errors.dueDate}
         />
 
         <div className="flex flex-col justify-end">

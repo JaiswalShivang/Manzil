@@ -56,21 +56,27 @@ export const register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    const existingUser = await User.findOne({
-      $or: [{ email: email.toLowerCase() }, { username }],
-    });
-
-    if (existingUser) {
-      const field = existingUser.email === email.toLowerCase() ? 'Email' : 'Username';
+    const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingEmail) {
       return res.status(400).json({
         success: false,
-        message: `${field} is already taken. Please choose another.`,
+        field: 'email',
+        message: `Email address "${email}" is already registered. Please sign in or use another email.`,
+      });
+    }
+
+    const existingUsername = await User.findOne({ username: username.trim() });
+    if (existingUsername) {
+      return res.status(400).json({
+        success: false,
+        field: 'username',
+        message: `Codename "${username}" is already assigned to another operative. Please choose a unique codename.`,
       });
     }
 
     const user = new User({
-      username,
-      email: email.toLowerCase(),
+      username: username.trim(),
+      email: email.toLowerCase().trim(),
       passwordHash: password,
       role: 'user',
       level: 1,
@@ -109,7 +115,7 @@ export const register = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Agent commissioned successfully.',
+      message: `Agent ${user.username} commissioned successfully! Allocated 60 Gold requisition credits.`,
       accessToken,
       user: formatUserResponse(user),
     });
@@ -128,7 +134,8 @@ export const login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        field: 'email',
+        message: `No operative found registered with email "${email}". Check your email spelling or enlist as a new agent.`,
       });
     }
 
@@ -136,7 +143,8 @@ export const login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        field: 'password',
+        message: 'Incorrect security passcode entered for this agent account. Access denied.',
       });
     }
 
