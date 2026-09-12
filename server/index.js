@@ -68,7 +68,7 @@ app.use(async (req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
-    app: 'Life RPG API',
+    app: 'Manzil API',
     aesthetic: 'Constructivist Bauhaus Edition',
     timestamp: new Date().toISOString(),
   });
@@ -97,7 +97,7 @@ app.use(errorHandler);
 // Only listen on port when not running as a Vercel Serverless Function
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`✨ Life RPG API running on http://localhost:${PORT}`);
+    console.log(`✨ Manzil API running on http://localhost:${PORT}`);
     console.log(`🍵 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }

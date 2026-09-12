@@ -68,7 +68,7 @@ export const LoginPage = () => {
           <Input
             label="AGENT IDENTIFIER (EMAIL)"
             type="email"
-            placeholder="agent@liferpg.io"
+            placeholder="agent@manzil.io"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

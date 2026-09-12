@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Life RPG API - Cozy Lo-Fi Study Room Edition",
+  "description": "Manzil API - Cozy Lo-Fi Study Room Edition",
   "main": "index.js",
   "type": "module",
   "scripts": {

@@ -35,7 +35,7 @@ export const Navbar = () => {
         {/* Bauhaus Wordmark Logo */}
         <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2 group">
           <div className="bg-[#141414] text-[#F5F3EF] px-3 py-1.5 font-heading font-black text-xl tracking-tighter border-2 border-[#141414] shadow-brutal-sm group-hover:bg-[#E8402C] transition-colors">
-            LIFE RPG
+            MANZIL
           </div>
           <div className="hidden sm:block text-[11px] font-heading font-extrabold uppercase tracking-widest text-[#141414]/70 border-l-2 border-[#141414] pl-2">
             CONSTRUCTIVIST HUD

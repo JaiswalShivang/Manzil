@@ -89,7 +89,7 @@ export const RegisterPage = () => {
           <Input
             label="COMMUNICATION CHANNEL (EMAIL)"
             type="email"
-            placeholder="agent@liferpg.io"
+            placeholder="agent@manzil.io"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

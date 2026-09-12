@@ -5,7 +5,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b-2 border-[#141414]">
           <div className="space-y-2">
             <div className="inline-block bg-[#141414] text-[#F5F3EF] px-3 py-1 font-heading font-black text-lg">
-              LIFE RPG
+              MANZIL
             </div>
             <p className="text-xs font-sans text-[#141414]/70 max-w-xs">
               Constructivist productivity engine. Turn real-world output into verifiable character progression.
@@ -48,7 +48,7 @@ export const Footer = () => {
         </div>
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-heading font-bold uppercase text-[#141414]/60">
-          <div>© 2026 LIFE RPG • CONSTRUCTIVIST HUD • ALL RIGHTS RESERVED</div>
+          <div>© 2026 MANZIL • CONSTRUCTIVIST HUD • ALL RIGHTS RESERVED</div>
           <div>SWISS DESIGN MATRIX • SHARP EXECUTION</div>
         </div>
       </div>

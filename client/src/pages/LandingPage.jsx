@@ -397,7 +397,7 @@ export const LandingPage = () => {
               SKILL SPECIFICATIONS
             </h2>
             <p className="text-xs font-heading font-bold text-[#141414]/60 uppercase tracking-wider mt-1">
-              THE 4 VECTOR METERS OF LIFE RPG PROGRESSION
+              THE 4 VECTOR METERS OF MANZIL PROGRESSION
             </p>
           </div>
 
