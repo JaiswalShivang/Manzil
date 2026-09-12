@@ -1,14 +1,8 @@
-/**
- * Life RPG Progression Engine
- * Non-linear leveling formula, calendar-day streak computation, and skill increments.
- */
 
-// Formula: xpToNextLevel(level) = Math.round(50 * Math.pow(level, 1.5))
 export const calculateXPToNextLevel = (level) => {
   return Math.max(50, Math.round(50 * Math.pow(level, 1.5)));
 };
 
-// Base rewards for quests if not specified or to validate bounds
 export const getBaseRewards = (category = 'intellect') => {
   switch (category) {
     case 'intellect':
@@ -24,12 +18,9 @@ export const getBaseRewards = (category = 'intellect') => {
   }
 };
 
-/**
- * Streak calculation based on calendar days (UTC/local date comparison)
- */
 export const updateStreak = (currentStreak = { count: 0, lastCompletedDate: null }) => {
   const now = new Date();
-  
+
   if (!currentStreak.lastCompletedDate) {
     return {
       count: 1,
@@ -40,13 +31,13 @@ export const updateStreak = (currentStreak = { count: 0, lastCompletedDate: null
   }
 
   const lastDate = new Date(currentStreak.lastCompletedDate);
-  
-  // Format as YYYY-MM-DD for clean calendar-day comparison
+
+
   const lastDateStr = lastDate.toISOString().split('T')[0];
   const todayStr = now.toISOString().split('T')[0];
 
   if (lastDateStr === todayStr) {
-    // Already completed a quest today, streak stays the same
+
     return {
       count: currentStreak.count || 1,
       lastCompletedDate: now,
@@ -55,20 +46,16 @@ export const updateStreak = (currentStreak = { count: 0, lastCompletedDate: null
     };
   }
 
-  // Calculate day difference
   const diffTime = Math.abs(now.setHours(0, 0, 0, 0) - lastDate.setHours(0, 0, 0, 0));
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   let newCount = 1;
   if (diffDays === 1) {
-    // Consecutive day
     newCount = (currentStreak.count || 0) + 1;
   } else {
-    // Missed a day or more, reset to 1
     newCount = 1;
   }
 
-  // Check streak milestone bonus (3, 7, 14, 30 days)
   let milestoneBonus = null;
   if (newCount === 3) milestoneBonus = { bonusXP: 50, bonusCoins: 30, message: '3-day Study Streak! 🕯️' };
   else if (newCount === 7) milestoneBonus = { bonusXP: 120, bonusCoins: 75, message: '1-Week Habit Master! 🌿' };
@@ -83,9 +70,6 @@ export const updateStreak = (currentStreak = { count: 0, lastCompletedDate: null
   };
 };
 
-/**
- * Handle XP addition, level up detection and overflow
- */
 export const applyProgression = (user, xpEarned, coinsEarned, category) => {
   let level = user.level || 1;
   let currentXP = (user.currentXP || 0) + xpEarned;
@@ -100,11 +84,9 @@ export const applyProgression = (user, xpEarned, coinsEarned, category) => {
     leveledUp = true;
     levelsGained += 1;
     xpThreshold = calculateXPToNextLevel(level);
-    // Level-up reward: 25 bonus coins per level gained
     cozyCoins += 25;
   }
 
-  // Update skills
   const skills = {
     intellect: user.skills?.intellect || 0,
     vitality: user.skills?.vitality || 0,

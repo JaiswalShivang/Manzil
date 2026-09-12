@@ -12,7 +12,7 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(
         token,
-        process.env.JWT_ACCESS_SECRET || 'cozy_lofi_study_room_jwt_access_secret_2024'
+        process.env.JWT_ACCESS_SECRET || 'secret'
       );
 
       req.user = await User.findById(decoded.id).select('-passwordHash -refreshTokenHash');
