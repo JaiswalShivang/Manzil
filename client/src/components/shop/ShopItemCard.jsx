@@ -34,20 +34,20 @@ export const ShopItemCard = ({
 
   return (
     <div
-      className={`relative border-3 border-[#141414] p-5 transition-none flex flex-col justify-between ${
+      className={`relative border-3 border-[#141414] p-5 flex flex-col justify-between overflow-hidden ${
         isLevelLocked
-          ? 'bg-[#EAE7E1]'
+          ? 'bg-[#141414] shadow-brutal'
           : isEquipped
-          ? 'bg-[#FAF3E8] shadow-brutal-lg ring-2 ring-[#2B4AE8]'
-          : 'bg-[#FAF3E8] shadow-brutal hover:bg-white'
+          ? 'bg-[#FAF3E8] shadow-brutal-lg ring-2 ring-[#2B4AE8] card-hover-brutal'
+          : 'bg-[#FAF3E8] shadow-brutal hover:bg-white card-hover-brutal'
       }`}
     >
-      {/* Locked Diagonal Striped Overlay */}
+      {/* Locked Solid Diagonal Striped Overlay - Zero Bleed-Through */}
       {isLevelLocked && (
-        <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-20 p-4 text-center">
-          <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3 py-1.5 text-xs font-heading font-black uppercase shadow-brutal-sm flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>LOCKS AT LV. {reqLevel}</span>
+        <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-30 p-4 text-center select-none">
+          <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3.5 py-2 text-xs font-heading font-black uppercase shadow-brutal flex items-center gap-2">
+            <Lock className="w-4 h-4 stroke-[2.5]" />
+            <span>UNLOCKS AT LV. {reqLevel}</span>
           </div>
         </div>
       )}

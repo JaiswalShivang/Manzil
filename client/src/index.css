@@ -52,21 +52,50 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   box-shadow: 4px 4px 0px #F2B705;
 }
 
-/* Diagonal Stripe Pattern for Locked Items */
+/* Solid Opaque Diagonal Stripe Pattern for Locked Items - Zero Bleed-Through */
 .stripes-locked {
-  background: repeating-linear-gradient(
+  background-color: #141414;
+  background-image: repeating-linear-gradient(
     -45deg,
-    rgba(20, 20, 20, 0.85),
-    rgba(20, 20, 20, 0.85) 12px,
-    rgba(35, 35, 35, 0.95) 12px,
-    rgba(35, 35, 35, 0.95) 24px
+    #141414,
+    #141414 12px,
+    #262626 12px,
+    #262626 24px
   );
 }
 
-/* Snappy Button Active States */
-button:active:not(:disabled) {
-  transform: translate(2px, 2px);
+/* Brutalist Card Hover Feedback (150ms, no bouncy easing) */
+.card-hover-brutal {
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+}
+.card-hover-brutal:hover {
+  transform: translateY(-4px);
+  box-shadow: 6px 6px 0px #141414 !important;
+}
+
+/* Snappy Button Hover & Click Active States */
+button, .btn-interactive {
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out;
+}
+button:hover:not(:disabled):not(:active), .btn-interactive:hover:not(:disabled):not(:active) {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #141414;
+}
+button:active:not(:disabled), .btn-interactive:active:not(:disabled) {
+  transform: translate(2px, 2px) !important;
   box-shadow: 2px 2px 0px #141414 !important;
+}
+
+/* Tactile Paper Grain Texture Overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 /* High Contrast Scrollbar */

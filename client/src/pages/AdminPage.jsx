@@ -475,19 +475,6 @@ export const AdminPage = () => {
                   <span>[MACRO 01] GRANT +250 GOLD TO ALL REGISTERED AGENTS</span>
                   <Coins className="w-4 h-4" />
                 </button>
-
-                <button
-                  onClick={() => {
-                    if (window.confirm('Re-seed the Vault catalog with 21 standard Bauhaus items?')) {
-                      reseedShopMutation.mutate();
-                    }
-                  }}
-                  disabled={reseedShopMutation.isPending}
-                  className="w-full py-3 bg-[#2B4AE8] hover:bg-[#141414] text-white border-2 border-[#141414] text-xs font-mono font-black uppercase text-left px-4 flex items-center justify-between cursor-pointer"
-                >
-                  <span>[MACRO 02] RE-SEED CATALOG WITH 21 DEFAULT ASSETS</span>
-                  <Store className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>

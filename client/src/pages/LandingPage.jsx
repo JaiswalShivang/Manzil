@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion, useInView } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import {
   Sparkles,
@@ -10,7 +11,57 @@ import {
   Zap,
 } from 'lucide-react';
 
+const CountUpNumeral = ({ endValue, suffix = '', duration = 1.2, shouldReduceMotion = false }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-40px' });
+
+  useEffect(() => {
+    if (shouldReduceMotion || !isInView) return;
+
+    let startTime = null;
+    let frameId = null;
+
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(easeOut * endValue);
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(step);
+      } else {
+        setDisplayValue(endValue);
+      }
+    };
+
+    frameId = requestAnimationFrame(step);
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+    };
+  }, [isInView, endValue, duration, shouldReduceMotion]);
+
+  if (shouldReduceMotion) {
+    return (
+      <span>
+        {endValue.toLocaleString()}
+        {suffix}
+      </span>
+    );
+  }
+
+  return (
+    <span ref={ref}>
+      {displayValue.toLocaleString()}
+      {suffix}
+    </span>
+  );
+};
+
 export const LandingPage = () => {
+  const shouldReduceMotion = useReducedMotion();
+
   // -------------------------------------------------------------
   // HERO FEATURE: INTERACTIVE PROGRESSION PIPELINE (5 STAGES)
   // -------------------------------------------------------------
@@ -178,11 +229,14 @@ export const LandingPage = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-0 bg-[#F5F3EF] text-[#141414]">
+    <div className="flex flex-col gap-0 bg-[#F5F3EF] text-[#141414] relative">
+      {/* Tactile Paper Grain Noise Texture Overlay across page (2.5% opacity) */}
+      <div className="noise-overlay" aria-hidden="true" />
+
       {/* ------------------------------------------------------------- */}
       {/* 2. HERO SECTION */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-b-3 border-[#141414] py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#F5F3EF]">
+      <section className="border-b-3 border-[#141414] pt-12 sm:pt-16 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#F5F3EF]">
         <div className="max-w-7xl mx-auto flex flex-col items-start">
           {/* Eyebrow Badge */}
           <div className="inline-flex items-center gap-2 bg-[#141414] text-[#F5F3EF] px-3.5 py-1 text-xs font-heading font-black tracking-widest uppercase border-2 border-[#141414] mb-6 shadow-brutal-sm">
@@ -193,8 +247,19 @@ export const LandingPage = () => {
           {/* Oversized Uppercase Headline */}
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-heading font-black tracking-tighter uppercase leading-[0.92] text-[#141414] max-w-5xl mb-6">
             STOP DRIFTING.{' '}
-            <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0 inline-block shadow-brutal">
-              START LEVELING.
+            <span className="relative inline-block">
+              {/* Subtle Color-Block Depth Glow Behind Sharp Badge */}
+              <span
+                className="absolute -inset-2 bg-[#E8402C] opacity-40 blur-xl -z-10 pointer-events-none"
+                aria-hidden="true"
+              />
+              <span
+                className="absolute -inset-4 bg-[#F2B705] opacity-25 blur-2xl -z-10 pointer-events-none"
+                aria-hidden="true"
+              />
+              <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0 inline-block shadow-brutal relative z-0">
+                START LEVELING.
+              </span>
             </span>
           </h1>
 
@@ -233,8 +298,14 @@ export const LandingPage = () => {
       {/* ------------------------------------------------------------- */}
       {/* 3. INTERACTIVE PROGRESSION PIPELINE (HERO FEATURE) */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
+      <section className="border-b-3 border-[#141414] py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <motion.div
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="max-w-7xl mx-auto"
+        >
           {/* Section Heading & Autoplay Toggle */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
@@ -282,12 +353,12 @@ export const LandingPage = () => {
                     setPipelineStage(stage.id);
                     setIsAutoplay(false);
                   }}
-                  className={`p-4 text-left border-r-2 border-b-2 sm:border-b-0 border-[#141414] last:border-r-0 transition-all cursor-pointer relative ${
+                  className={`p-4 text-left border-r-2 border-b-2 sm:border-b-0 border-[#141414] last:border-r-0 cursor-pointer relative transition-all ${
                     isActive
                       ? 'bg-[#141414] text-[#F5F3EF]'
                       : isPast
-                      ? 'bg-[#F5F3EF] text-[#141414] hover:bg-[#EBE7DF]'
-                      : 'bg-white text-[#141414]/70 hover:bg-[#F5F3EF]'
+                      ? 'bg-[#F5F3EF] text-[#141414] hover:bg-[#FAF3E8] hover:border-[#E8402C] hover:text-[#E8402C]'
+                      : 'bg-white text-[#141414]/70 hover:bg-[#FAF3E8] hover:border-[#E8402C] hover:text-[#E8402C]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -332,7 +403,7 @@ export const LandingPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Input Card */}
-              <div className="bg-white border-2 border-[#141414] p-5 shadow-brutal-sm">
+              <div className="bg-white border-2 border-[#141414] p-5 shadow-brutal-sm card-hover-brutal">
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#141414]/20">
                   <span className="text-[10px] font-heading font-black uppercase text-[#141414]/60">
                     [01] {activeStageData.inputLabel}
@@ -350,7 +421,7 @@ export const LandingPage = () => {
               </div>
 
               {/* Transformation Card */}
-              <div className="bg-white border-2 border-[#141414] p-5 shadow-brutal-sm">
+              <div className="bg-white border-2 border-[#141414] p-5 shadow-brutal-sm card-hover-brutal">
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#141414]/20">
                   <span className="text-[10px] font-heading font-black uppercase text-[#141414]/60">
                     [02] {activeStageData.transformLabel}
@@ -366,7 +437,7 @@ export const LandingPage = () => {
               </div>
 
               {/* Output Card */}
-              <div className="bg-[#141414] text-[#F5F3EF] border-2 border-[#141414] p-5 shadow-brutal-red">
+              <div className="bg-[#141414] text-[#F5F3EF] border-2 border-[#141414] p-5 shadow-brutal-red card-hover-brutal">
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#F5F3EF]/20">
                   <span className="text-[10px] font-heading font-black uppercase text-[#F2B705]">
                     [03] {activeStageData.outputLabel}
@@ -381,13 +452,13 @@ export const LandingPage = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ------------------------------------------------------------- */}
       {/* 4. SKILL SYSTEM — "MENTAL MODEL" CARDS GRID */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#F5F3EF]">
+      <section className="border-b-3 border-[#141414] py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#F5F3EF]">
         <div className="max-w-7xl mx-auto">
           <div className="mb-10">
             <span className="bg-[#2B4AE8] text-[#F5F3EF] px-2 py-0.5 text-[11px] font-heading font-black inline-block mb-1">
@@ -403,7 +474,13 @@ export const LandingPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Intellect Card */}
-            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.4, delay: shouldReduceMotion ? 0 : 0, ease: 'easeOut' }}
+              className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative card-hover-brutal"
+            >
               {/* Corner Tag Block */}
               <div className="absolute top-0 left-0 w-8 h-8 bg-[#2B4AE8] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#F5F3EF] text-xs font-black">
                 01
@@ -430,10 +507,16 @@ export const LandingPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Vitality Card */}
-            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.4, delay: shouldReduceMotion ? 0 : 0.08, ease: 'easeOut' }}
+              className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative card-hover-brutal"
+            >
               <div className="absolute top-0 left-0 w-8 h-8 bg-[#E8402C] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#F5F3EF] text-xs font-black">
                 02
               </div>
@@ -458,10 +541,16 @@ export const LandingPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Discipline Card */}
-            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.4, delay: shouldReduceMotion ? 0 : 0.16, ease: 'easeOut' }}
+              className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative card-hover-brutal"
+            >
               <div className="absolute top-0 left-0 w-8 h-8 bg-[#141414] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#F5F3EF] text-xs font-black">
                 03
               </div>
@@ -486,10 +575,16 @@ export const LandingPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Creativity Card */}
-            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.4, delay: shouldReduceMotion ? 0 : 0.24, ease: 'easeOut' }}
+              className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative card-hover-brutal"
+            >
               <div className="absolute top-0 left-0 w-8 h-8 bg-[#F2B705] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#141414] text-xs font-black">
                 04
               </div>
@@ -514,7 +609,7 @@ export const LandingPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -522,12 +617,12 @@ export const LandingPage = () => {
       {/* ------------------------------------------------------------- */}
       {/* 5. STATS STRIP (SOLID ACCENT BAND WITH OVERSIZED NUMERALS) */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-b-3 border-[#141414] bg-[#E8402C] text-[#F5F3EF] py-12">
+      <section className="border-b-3 border-[#141414] bg-[#E8402C] text-[#F5F3EF] py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#141414]">
             <div className="pt-4 md:pt-0 md:px-6">
               <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight">
-                14,800+
+                <CountUpNumeral endValue={14800} suffix="+" shouldReduceMotion={shouldReduceMotion} />
               </div>
               <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
                 QUESTS COMPLETED
@@ -536,7 +631,7 @@ export const LandingPage = () => {
 
             <div className="pt-4 md:pt-0 md:px-6">
               <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight text-[#F2B705]">
-                3,400+
+                <CountUpNumeral endValue={3400} suffix="+" shouldReduceMotion={shouldReduceMotion} />
               </div>
               <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
                 PLAYERS LEVELED UP
@@ -545,7 +640,7 @@ export const LandingPage = () => {
 
             <div className="pt-4 md:pt-0 md:px-6">
               <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight">
-                94%
+                <CountUpNumeral endValue={94} suffix="%" shouldReduceMotion={shouldReduceMotion} />
               </div>
               <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
                 PROTOCOL ADHERENCE
@@ -554,7 +649,7 @@ export const LandingPage = () => {
 
             <div className="pt-4 md:pt-0 md:px-6">
               <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight text-[#F2B705]">
-                85,000+
+                <CountUpNumeral endValue={85000} suffix="+" shouldReduceMotion={shouldReduceMotion} />
               </div>
               <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
                 GOLD DISTRIBUTED
@@ -567,7 +662,7 @@ export const LandingPage = () => {
       {/* ------------------------------------------------------------- */}
       {/* 6. THE VAULT (SHOP PREVIEW) */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="border-b-3 border-[#141414] py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
@@ -591,15 +686,21 @@ export const LandingPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {vaultPreviewItems.map((item, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className={`bg-[#F5F3EF] border-2 ${item.accent} p-5 shadow-brutal relative flex flex-col justify-between`}
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.4, delay: shouldReduceMotion ? 0 : idx * 0.08, ease: 'easeOut' }}
+                className={`bg-[#F5F3EF] border-2 ${item.accent} p-5 shadow-brutal relative flex flex-col justify-between overflow-hidden ${
+                  item.isLocked ? '' : 'card-hover-brutal'
+                }`}
               >
-                {/* Diagonal Striped Overlay for Locked Items */}
+                {/* Solid Opaque Diagonal Striped Overlay for Locked Items - Zero Bleed-Through */}
                 {item.isLocked && (
-                  <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-10 p-4 text-center">
-                    <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3 py-1.5 text-xs font-heading font-black uppercase shadow-brutal-sm flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5" />
+                  <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-30 p-4 text-center select-none">
+                    <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3.5 py-2 text-xs font-heading font-black uppercase shadow-brutal flex items-center gap-2">
+                      <Lock className="w-4 h-4 stroke-[2.5]" />
                       <span>UNLOCKS AT LV. {item.unlockLevel}</span>
                     </div>
                   </div>
@@ -634,7 +735,7 @@ export const LandingPage = () => {
                     GEAR TIER
                   </span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -643,7 +744,7 @@ export const LandingPage = () => {
       {/* ------------------------------------------------------------- */}
       {/* 7. STREAK PROTOCOL CALLOUT (WARNING-STYLE PROTOCOL BOX) */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#F5F3EF]">
+      <section className="border-b-3 border-[#141414] py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-[#F5F3EF]">
         <div className="max-w-5xl mx-auto border-3 border-[#141414] bg-white p-6 sm:p-10 shadow-brutal-lg relative">
           <div className="flex items-center justify-between pb-4 mb-6 border-b-2 border-[#141414]">
             <div className="flex items-center gap-2">
@@ -658,7 +759,7 @@ export const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF] card-hover-brutal">
               <span className="text-[10px] font-heading font-black text-[#E8402C] uppercase block mb-1">
                 RULE 01
               </span>
@@ -670,7 +771,7 @@ export const LandingPage = () => {
               </p>
             </div>
 
-            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF] card-hover-brutal">
               <span className="text-[10px] font-heading font-black text-[#2B4AE8] uppercase block mb-1">
                 RULE 02
               </span>
@@ -682,7 +783,7 @@ export const LandingPage = () => {
               </p>
             </div>
 
-            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF] card-hover-brutal">
               <span className="text-[10px] font-heading font-black text-[#F2B705] uppercase block mb-1">
                 RULE 03
               </span>
@@ -694,7 +795,7 @@ export const LandingPage = () => {
               </p>
             </div>
 
-            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF] card-hover-brutal">
               <span className="text-[10px] font-heading font-black text-[#141414] uppercase block mb-1">
                 RULE 04
               </span>
@@ -712,8 +813,14 @@ export const LandingPage = () => {
       {/* ------------------------------------------------------------- */}
       {/* 8. FINAL FULL-BLEED CTA BAND */}
       {/* ------------------------------------------------------------- */}
-      <section className="bg-[#141414] text-[#F5F3EF] py-20 sm:py-28 px-4 sm:px-6 lg:px-8 text-center relative">
-        <div className="max-w-4xl mx-auto flex flex-col items-center">
+      <section className="bg-[#141414] text-[#F5F3EF] py-16 sm:py-24 px-4 sm:px-6 lg:px-8 text-center relative">
+        <motion.div
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="max-w-4xl mx-auto flex flex-col items-center"
+        >
           <div className="inline-block bg-[#E8402C] text-[#F5F3EF] px-3 py-1 font-heading font-black text-xs uppercase mb-6 tracking-widest">
             COMMAND DECK WAITING
           </div>
@@ -735,7 +842,7 @@ export const LandingPage = () => {
               INITIALIZE AGENT NOW →
             </Button>
           </Link>
-        </div>
+        </motion.div>
       </section>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -15,6 +16,16 @@ export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -30,7 +41,13 @@ export const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F5F3EF] border-b-3 border-[#141414] transition-all">
+    <header
+      className={`sticky top-0 z-40 border-b-3 border-[#141414] transition-all duration-200 ${
+        isScrolled
+          ? 'bg-[#F5F3EF]/90 backdrop-blur-md shadow-brutal-sm'
+          : 'bg-[#F5F3EF] shadow-none'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Bauhaus Wordmark Logo */}
         <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2 group">
