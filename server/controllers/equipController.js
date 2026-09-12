@@ -41,9 +41,9 @@ export const equipItem = async (req, res, next) => {
     }
 
     // Verify ownership in inventory
-    const ownsItem = (user.inventory || []).some((invId) => {
-      const idStr = (invId?._id || invId?.itemId || invId).toString();
-      return idStr === item._id.toString();
+    const ownsItem = (user.inventory || []).some((inv) => {
+      const invItemId = (inv?.itemId?._id || inv?.itemId || inv?._id || inv)?.toString();
+      return invItemId === item._id.toString();
     });
 
     if (!ownsItem) {

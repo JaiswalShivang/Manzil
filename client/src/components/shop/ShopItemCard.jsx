@@ -35,7 +35,7 @@ export const ShopItemCard = ({
   return (
     <div
       className={`relative border-3 border-[#141414] p-5 flex flex-col justify-between overflow-hidden ${
-        isLevelLocked
+        isLevelLocked && !isOwned
           ? 'bg-[#141414] shadow-brutal'
           : isEquipped
           ? 'bg-[#FAF3E8] shadow-brutal-lg ring-2 ring-[#2B4AE8] card-hover-brutal'
@@ -43,7 +43,7 @@ export const ShopItemCard = ({
       }`}
     >
       {/* Locked Solid Diagonal Striped Overlay - Zero Bleed-Through */}
-      {isLevelLocked && (
+      {isLevelLocked && !isOwned && (
         <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-30 p-4 text-center select-none">
           <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3.5 py-2 text-xs font-heading font-black uppercase shadow-brutal flex items-center gap-2">
             <Lock className="w-4 h-4 stroke-[2.5]" />
@@ -65,11 +65,16 @@ export const ShopItemCard = ({
             </span>
           </div>
 
-          {isNewUnlock && !isLevelLocked && (
+          {isOwned ? (
+            <span className="text-[9px] font-mono font-black uppercase px-1.5 py-0.5 bg-[#141414] text-[#F2B705] border border-[#141414] flex items-center gap-1">
+              <Check className="w-2.5 h-2.5 stroke-[3]" />
+              ACQUIRED
+            </span>
+          ) : isNewUnlock && !isLevelLocked ? (
             <span className="text-[9px] font-mono font-black uppercase px-1.5 py-0.5 bg-[#E8402C] text-white border border-[#141414]">
               NEW UNLOCK
             </span>
-          )}
+          ) : null}
         </div>
 
         {/* Visual Sprite Representation Box */}
@@ -114,12 +119,19 @@ export const ShopItemCard = ({
         </div>
       </div>
 
-      {/* Footer: Price Badge & Action Button */}
+      {/* Footer: Price / Acquired Badge & Action Button */}
       <div className="pt-3 border-t-2 border-[#141414] flex items-center justify-between gap-2 mt-auto">
-        <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-black uppercase flex items-center gap-1">
-          <Coins className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>{cost} GOLD</span>
-        </div>
+        {isOwned ? (
+          <div className="bg-[#141414] text-[#F5F3EF] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-black uppercase flex items-center gap-1.5">
+            <Check className="w-3.5 h-3.5 stroke-[3] text-[#F2B705]" />
+            <span>OWNED</span>
+          </div>
+        ) : (
+          <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-black uppercase flex items-center gap-1">
+            <Coins className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>{cost} GOLD</span>
+          </div>
+        )}
 
         <div>
           {isOwned ? (
@@ -139,7 +151,7 @@ export const ShopItemCard = ({
               <button
                 onClick={() => onEquip(item._id)}
                 disabled={isProcessing}
-                className="px-3 py-1.5 bg-[#F5F3EF] hover:bg-[#141414] text-[#141414] hover:text-white border-2 border-[#141414] text-xs font-mono font-black uppercase cursor-pointer transition-none shadow-brutal-sm"
+                className="px-3 py-1.5 bg-[#F2B705] hover:bg-[#141414] text-[#141414] hover:text-white border-2 border-[#141414] text-xs font-mono font-black uppercase cursor-pointer transition-none shadow-brutal-sm"
               >
                 EQUIP →
               </button>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/client';
@@ -29,15 +30,25 @@ const formatRelativeTime = (date) => {
 };
 
 export const ProfilePage = () => {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading, logout, refreshUser } = useAuth();
+  const [ledgerFilter, setLedgerFilter] = useState('ALL');
 
-  // Fetch completed quests for Activity Ledger
+  // Synchronize latest user profile state on mount
+  useEffect(() => {
+    if (refreshUser) {
+      refreshUser();
+    }
+  }, [refreshUser]);
+
+  // Fetch completed quests dynamically with zero-stale cache
   const { data: completedQuestsData, isLoading: isQuestsLoading } = useQuery({
     queryKey: ['quests', 'completed'],
     queryFn: async () => {
       const res = await api.get('/quests?status=completed');
       return res.data;
     },
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const skills = [
@@ -101,32 +112,29 @@ export const ProfilePage = () => {
   }));
 
   const inventoryPurchasesList = inventory
-    .map((inv) => {
-      const item = inv?.itemId || inv;
-      if (!item || !item.name) return null;
+    .map((inv, idx) => {
+      const item = inv?.itemId && typeof inv.itemId === 'object' ? inv.itemId : (inv && typeof inv === 'object' ? inv : {});
+      const itemName = item?.name || (typeof inv?.itemId === 'string' ? 'EQUIPMENT ACQUISITION' : 'VAULT ASSET');
+      const itemType = item?.itemType === 'crystal' ? 'aura' : item?.itemType || 'gear';
+      const itemId = item?._id || inv?.itemId || inv?._id || idx;
       return {
-        id: `purchase-${item._id}-${inv?.purchasedAt || inv?.acquiredAt || 'init'}`,
+        id: `purchase-${itemId}-${inv?.purchasedAt || inv?.acquiredAt || idx}`,
         type: 'purchase',
-        title: item.name,
-        category: item.itemType === 'crystal' ? 'aura' : item.itemType || 'gear',
+        title: itemName,
+        category: itemType,
         timestamp: new Date(inv?.purchasedAt || inv?.acquiredAt || user?.createdAt || 0),
         reward: null,
-        cost: `-${item.goldCost || item.cost || 0} G`,
+        cost: item?.goldCost !== undefined ? `-${item.goldCost} G` : '-50 G',
       };
-    })
-    .filter(Boolean);
+    });
 
-  const mergedLedger = [...completedQuestsList, ...inventoryPurchasesList]
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-    .slice(0, 30);
+  const allLedgerEntries = [...completedQuestsList, ...inventoryPurchasesList]
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-  // Generate streak calendar matrix (last 28 days)
-  const streakDays = Array.from({ length: 28 }, (_, i) => {
-    const currentStreak = user?.streak?.count || 0;
-    // Highlight the most recent consecutive days
-    const isCompleted = i >= 28 - currentStreak;
-    const isToday = i === 27;
-    return { day: i + 1, isCompleted, isToday };
+  const filteredLedger = allLedgerEntries.filter((entry) => {
+    if (ledgerFilter === 'DIRECTIVES') return entry.type === 'quest';
+    if (ledgerFilter === 'VAULT') return entry.type === 'purchase';
+    return true;
   });
 
   if (isLoading || !user) {
@@ -285,56 +293,52 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Streak Protocol Matrix */}
-      <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-2 border-[#141414]/20 pb-4">
-          <div>
-            <span className="text-xs font-mono font-bold text-[#2B4AE8] block">// VERIFICATION MATRIX</span>
-            <h2 className="text-xl font-black font-space text-[#141414] uppercase">
-              28-DAY DISCIPLINE CADENCE
-            </h2>
-          </div>
-          <div className="flex items-center gap-4 text-xs font-mono font-bold">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 bg-[#E8402C] border border-[#141414] inline-block" /> VERIFIED DAY
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 bg-[#F5F3EF] border border-[#141414] inline-block" /> UNVERIFIED
-            </span>
-          </div>
-        </div>
-
-        {/* Sharp Square Contribution Grid */}
-        <div className="grid grid-cols-7 sm:grid-cols-14 gap-2">
-          {streakDays.map((d) => (
-            <div
-              key={d.day}
-              className={`aspect-square border-2 border-[#141414] flex flex-col items-center justify-center text-[10px] font-mono font-bold transition-none ${d.isCompleted
-                ? 'bg-[#E8402C] text-white'
-                : 'bg-[#F5F3EF] text-[#141414]/50'
-                } ${d.isToday ? 'ring-2 ring-[#141414] ring-offset-2' : ''}`}
-            >
-              <span>{d.day}</span>
-            </div>
-          ))}
-        </div>
-        <p className="text-[11px] font-mono text-[#141414]/70 mt-4 uppercase">
-          * PROTOCOL RULE: COMPLETE AT LEAST ONE ACTIVE QUEST BEFORE MIDNIGHT TO EXTEND CADENCE.
-        </p>
-      </div>
-
-      {/* Read-Only Activity Ledger Timeline */}
+      {/* Dynamic Activity Ledger Timeline */}
       <div>
-        <div className="flex items-baseline justify-between mb-4 border-b-3 border-[#141414] pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-4 border-b-3 border-[#141414] pb-3">
           <div>
-            <span className="text-xs font-mono font-bold text-[#2B4AE8] block">// TELEMETRY & TRANSACTION AUDIT</span>
+            <span className="text-xs font-mono font-bold text-[#2B4AE8] block">// REAL-TIME TELEMETRY & TRANSACTION AUDIT</span>
             <h2 className="text-2xl font-black font-space text-[#141414] uppercase">
               ACTIVITY LEDGER
             </h2>
           </div>
-          <span className="text-xs font-mono font-bold text-[#141414]/60">
-            {mergedLedger.length} RECENT AUDIT RECORDS
-          </span>
+
+          {/* Dynamic Filter Tabs */}
+          <div className="flex items-center gap-0 border-2 border-[#141414] bg-[#F5F3EF]">
+            <button
+              type="button"
+              onClick={() => setLedgerFilter('ALL')}
+              className={`px-3 py-1 text-xs font-heading font-black uppercase transition-none cursor-pointer border-r-2 border-[#141414] ${
+                ledgerFilter === 'ALL'
+                  ? 'bg-[#141414] text-[#F5F3EF]'
+                  : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
+              }`}
+            >
+              ALL ({allLedgerEntries.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLedgerFilter('DIRECTIVES')}
+              className={`px-3 py-1 text-xs font-heading font-black uppercase transition-none cursor-pointer border-r-2 border-[#141414] ${
+                ledgerFilter === 'DIRECTIVES'
+                  ? 'bg-[#141414] text-[#F5F3EF]'
+                  : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
+              }`}
+            >
+              DIRECTIVES ({completedQuestsList.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLedgerFilter('VAULT')}
+              className={`px-3 py-1 text-xs font-heading font-black uppercase transition-none cursor-pointer ${
+                ledgerFilter === 'VAULT'
+                  ? 'bg-[#141414] text-[#F5F3EF]'
+                  : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
+              }`}
+            >
+              VAULT ({inventoryPurchasesList.length})
+            </button>
+          </div>
         </div>
 
         {isQuestsLoading ? (
@@ -343,7 +347,7 @@ export const ProfilePage = () => {
             <Skeleton width="w-full" height="h-16" />
             <Skeleton width="w-full" height="h-16" />
           </div>
-        ) : mergedLedger.length === 0 ? (
+        ) : filteredLedger.length === 0 ? (
           <div className="bg-[#FAF3E8] border-3 border-[#141414] p-10 text-center shadow-brutal font-mono">
             <div className="text-xs font-bold text-[#141414]/50 uppercase mb-1">// ZERO TELEMETRY LOGGED</div>
             <p className="text-xs text-[#141414]/70 uppercase">
@@ -352,7 +356,7 @@ export const ProfilePage = () => {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {mergedLedger.map((entry) => (
+            {filteredLedger.map((entry) => (
               <div
                 key={entry.id}
                 className="bg-[#FAF3E8] border-2 border-[#141414] p-3.5 shadow-brutal-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono transition-none"

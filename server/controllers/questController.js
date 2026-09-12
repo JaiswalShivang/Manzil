@@ -1,6 +1,7 @@
 import Quest from '../models/Quest.js';
 import User from '../models/User.js';
 import { getBaseRewards, applyProgression, updateStreak } from '../utils/progression.js';
+import { populateUserEquipped } from './equipController.js';
 
 export const getQuests = async (req, res, next) => {
   try {
@@ -25,12 +26,13 @@ export const getQuests = async (req, res, next) => {
       { dueDate: { $lte: now } },
     ];
 
+    const sortOrder =
+      status === 'completed'
+        ? { completedAt: -1, updatedAt: -1 }
+        : { status: 1, dueDate: 1, createdAt: -1 };
+
     const quests = await Quest.find(filter)
-      .sort({
-        status: 1,
-        dueDate: 1,
-        createdAt: -1,
-      })
+      .sort(sortOrder)
       .lean();
 
     return res.status(200).json({
@@ -237,6 +239,8 @@ export const completeQuest = async (req, res, next) => {
 
     await user.save();
 
+    const populatedUser = await populateUserEquipped(User.findById(user._id));
+
     return res.status(200).json({
       success: true,
       message: progressionResult.leveledUp
@@ -262,16 +266,17 @@ export const completeQuest = async (req, res, next) => {
         streak: user.streak,
       },
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        level: user.level,
-        currentXP: user.currentXP,
-        xpToNextLevel: user.xpToNextLevel,
-        cozyCoins: user.cozyCoins,
-        skills: user.skills,
-        streak: user.streak,
-        inventory: user.inventory,
+        id: populatedUser._id,
+        username: populatedUser.username,
+        email: populatedUser.email,
+        level: populatedUser.level,
+        currentXP: populatedUser.currentXP,
+        xpToNextLevel: populatedUser.xpToNextLevel,
+        cozyCoins: populatedUser.cozyCoins,
+        skills: populatedUser.skills,
+        streak: populatedUser.streak,
+        inventory: populatedUser.inventory,
+        equipped: populatedUser.equipped,
       },
     });
   } catch (error) {

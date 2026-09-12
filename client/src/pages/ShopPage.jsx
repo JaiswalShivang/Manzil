@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '../api/client';
@@ -18,10 +18,17 @@ const slotTabs = [
 ];
 
 export const ShopPage = () => {
-  const { user, updateUserData } = useAuth();
+  const { user, updateUserData, refreshUser } = useAuth();
 
   const [activeSlot, setActiveSlot] = useState('hair');
   const [notification, setNotification] = useState(null);
+
+  // Synchronize latest user profile and inventory on mount
+  useEffect(() => {
+    if (refreshUser) {
+      refreshUser();
+    }
+  }, [refreshUser]);
 
   // Fetch shop items
   const { data: shopData, isLoading } = useQuery({
@@ -35,11 +42,20 @@ export const ShopPage = () => {
 
   const shopItems = shopData?.items || [];
 
-  // Determine owned item IDs
+  // Determine owned item IDs reliably (handles subdocuments, populated objects, or raw IDs)
+  const getItemId = (inv) => {
+    if (!inv) return null;
+    if (inv.itemId) {
+      return (inv.itemId._id || inv.itemId).toString();
+    }
+    if (inv._id) {
+      return inv._id.toString();
+    }
+    return inv.toString();
+  };
+
   const inventory = user?.inventory || [];
-  const ownedItemIds = new Set(
-    inventory.map((inv) => (inv?._id || inv?.itemId?._id || inv?.itemId || inv).toString())
-  );
+  const ownedItemIds = new Set(inventory.map(getItemId).filter(Boolean));
 
   // Determine equipped items via user.equipped
   const userEquipped = user?.equipped || {
@@ -69,7 +85,10 @@ export const ShopPage = () => {
         const slotKey = targetItem.itemType === 'crystal' ? 'aura' : targetItem.itemType;
         updateUserData({
           cozyCoins: Math.max(0, (user?.cozyCoins || 0) - (targetItem.goldCost || targetItem.cost || 0)),
-          inventory: [...(user?.inventory || []), targetItem],
+          inventory: [
+            ...(user?.inventory || []),
+            { itemId: targetItem, purchasedAt: new Date() },
+          ],
           equipped: {
             ...(user?.equipped || {}),
             [slotKey]: targetItem,
@@ -82,6 +101,13 @@ export const ShopPage = () => {
       if (data.user) {
         updateUserData(data.user);
       }
+      if (refreshUser) {
+        refreshUser();
+      }
+      setNotification({
+        type: 'success',
+        message: data.message || 'ASSET ACQUIRED & EQUIPPED',
+      });
     },
     onError: (err, itemId, context) => {
       if (context?.previousUser) {
@@ -118,6 +144,13 @@ export const ShopPage = () => {
       if (data.user) {
         updateUserData(data.user);
       }
+      if (refreshUser) {
+        refreshUser();
+      }
+      setNotification({
+        type: 'success',
+        message: data.message || 'EQUIPMENT LOADOUT UPDATED',
+      });
     },
     onError: (err, itemId, context) => {
       if (context?.previousUser) {
@@ -159,6 +192,13 @@ export const ShopPage = () => {
       if (data.user) {
         updateUserData(data.user);
       }
+      if (refreshUser) {
+        refreshUser();
+      }
+      setNotification({
+        type: 'success',
+        message: data.message || 'EQUIPMENT DEMOUNTED',
+      });
     },
     onError: (err, payload, context) => {
       if (context?.previousUser) {

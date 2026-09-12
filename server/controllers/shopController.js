@@ -48,8 +48,8 @@ export const purchaseItem = async (req, res, next) => {
 
     // Check if user already owns this item
     const alreadyOwns = (user.inventory || []).some((entry) => {
-      const idStr = (entry?._id || entry?.itemId || entry).toString();
-      return idStr === item._id.toString();
+      const entryItemId = (entry?.itemId?._id || entry?.itemId || entry?._id || entry)?.toString();
+      return entryItemId === item._id.toString();
     });
 
     if (alreadyOwns) {
