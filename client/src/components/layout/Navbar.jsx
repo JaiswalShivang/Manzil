@@ -37,7 +37,6 @@ export const Navbar = () => {
     { name: 'QUEST LOG', path: '/quests', icon: ScrollText },
     { name: 'THE VAULT', path: '/shop', icon: Shield },
     { name: 'DOSSIER', path: '/profile', icon: User },
-    ...(user?.role === 'admin' ? [{ name: 'ADMIN', path: '/admin', icon: Shield }] : []),
   ];
 
   return (

@@ -9,7 +9,7 @@ export const Button = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-heading font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-2 border-[#141414] select-none text-center';
+    'inline-flex items-center justify-center font-heading font-bold uppercase tracking-wider transition-all duration-75 active:duration-0 active:translate-x-0.5 active:translate-y-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-2 border-[#141414] select-none text-center';
 
   const variants = {
     primary:

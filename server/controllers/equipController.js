@@ -2,14 +2,15 @@ import Item from '../models/Item.js';
 import User from '../models/User.js';
 
 export const populateUserEquipped = async (userQuery) => {
+  const fields = 'name itemType webpUrl frameCount frameWidth frameHeight zIndex requiredLevel goldCost';
   return await userQuery
-    .populate('equipped.hair')
-    .populate('equipped.chest')
-    .populate('equipped.pants')
-    .populate('equipped.shoes')
-    .populate('equipped.weapon')
-    .populate('equipped.aura')
-    .populate('inventory.itemId');
+    .populate('equipped.hair', fields)
+    .populate('equipped.chest', fields)
+    .populate('equipped.pants', fields)
+    .populate('equipped.shoes', fields)
+    .populate('equipped.weapon', fields)
+    .populate('equipped.aura', fields)
+    .populate('inventory.itemId', fields);
 };
 
 export const equipItem = async (req, res, next) => {

@@ -12,7 +12,9 @@ export const getShopItems = async (req, res, next) => {
       filter.itemType = targetType;
     }
 
-    const items = await Item.find(filter).sort({ itemType: 1, requiredLevel: 1, goldCost: 1 });
+    const items = await Item.find(filter)
+      .sort({ itemType: 1, requiredLevel: 1, goldCost: 1 })
+      .lean();
 
     return res.status(200).json({
       success: true,

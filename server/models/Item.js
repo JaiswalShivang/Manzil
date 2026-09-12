@@ -78,6 +78,7 @@ const itemSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+itemSchema.index({ itemType: 1, requiredLevel: 1, goldCost: 1 });
 
 // Keep aliases synced
 itemSchema.pre('save', function (next) {

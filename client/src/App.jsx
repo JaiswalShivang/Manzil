@@ -10,14 +10,16 @@ import { DashboardPage } from './pages/DashboardPage';
 import { QuestLogPage } from './pages/QuestLogPage';
 import { ShopPage } from './pages/ShopPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { AdminPage } from './pages/AdminPage';
 import { Skeleton } from './components/ui/Skeleton';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes fresh cache for 0ms tab transitions
+      gcTime: 1000 * 60 * 30, // Retain inactive cache in memory for 30 minutes
       retry: 1,
     },
   },
@@ -114,7 +116,6 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
-          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

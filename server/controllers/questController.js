@@ -25,11 +25,13 @@ export const getQuests = async (req, res, next) => {
       { dueDate: { $lte: now } },
     ];
 
-    const quests = await Quest.find(filter).sort({
-      status: 1,
-      dueDate: 1,
-      createdAt: -1,
-    });
+    const quests = await Quest.find(filter)
+      .sort({
+        status: 1,
+        dueDate: 1,
+        createdAt: -1,
+      })
+      .lean();
 
     return res.status(200).json({
       success: true,

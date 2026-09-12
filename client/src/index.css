@@ -64,18 +64,23 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   );
 }
 
-/* Brutalist Card Hover Feedback (150ms, no bouncy easing) */
+/* Brutalist Card Hover Feedback (ultra-snappy) */
 .card-hover-brutal {
-  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  transition: transform 75ms cubic-bezier(0, 0, 0.2, 1), box-shadow 75ms cubic-bezier(0, 0, 0.2, 1);
+  will-change: transform, box-shadow;
 }
 .card-hover-brutal:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: 6px 6px 0px #141414 !important;
 }
 
-/* Snappy Button Hover & Click Active States */
-button, .btn-interactive {
-  transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out;
+/* Lightning-Fast Tactical Button Hover & Click Active States */
+button, .btn-interactive, a[role="button"] {
+  transition: transform 50ms cubic-bezier(0, 0, 0.2, 1), box-shadow 50ms cubic-bezier(0, 0, 0.2, 1), background-color 60ms ease-out, color 60ms ease-out;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  will-change: transform, box-shadow;
 }
 button:hover:not(:disabled):not(:active), .btn-interactive:hover:not(:disabled):not(:active) {
   transform: translate(-1px, -1px);
@@ -83,7 +88,8 @@ button:hover:not(:disabled):not(:active), .btn-interactive:hover:not(:disabled):
 }
 button:active:not(:disabled), .btn-interactive:active:not(:disabled) {
   transform: translate(2px, 2px) !important;
-  box-shadow: 2px 2px 0px #141414 !important;
+  box-shadow: 1px 1px 0px #141414 !important;
+  transition: none !important; /* Zero-latency click depression feedback */
 }
 
 /* Noise overlay disabled for silky-smooth 60fps performance */

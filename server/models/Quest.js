@@ -65,9 +65,10 @@ const questSchema = new mongoose.Schema(
   }
 );
 
-// Compound index for user quests filtered by status
-questSchema.index({ userId: 1, status: 1 });
+// High-performance compound indexes for user quests
+questSchema.index({ userId: 1, status: 1, dueDate: 1, createdAt: -1 });
 questSchema.index({ userId: 1, category: 1 });
+questSchema.index({ userId: 1, isRecurring: 1, dueDate: 1 });
 
 const Quest = mongoose.model('Quest', questSchema);
 
