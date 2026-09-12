@@ -10,6 +10,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { QuestLogPage } from './pages/QuestLogPage';
 import { ShopPage } from './pages/ShopPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { AdminPage } from './pages/AdminPage';
 import { Skeleton } from './components/ui/Skeleton';
 
 const queryClient = new QueryClient({
@@ -111,6 +112,7 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
