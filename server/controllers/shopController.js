@@ -1,17 +1,18 @@
 import Item from '../models/Item.js';
 import User from '../models/User.js';
-
+import { populateUserEquipped } from './equipController.js';
 
 export const getShopItems = async (req, res, next) => {
   try {
-    const { category } = req.query;
+    const { itemType, slot } = req.query;
     const filter = {};
 
-    if (category && ['plant', 'lamp', 'poster', 'rug', 'mug', 'wallpaper'].includes(category)) {
-      filter.category = category;
+    const targetType = itemType || slot;
+    if (targetType) {
+      filter.itemType = targetType;
     }
 
-    const items = await Item.find(filter).sort({ unlockLevel: 1, cost: 1 });
+    const items = await Item.find(filter).sort({ itemType: 1, requiredLevel: 1, goldCost: 1 });
 
     return res.status(200).json({
       success: true,
@@ -31,67 +32,74 @@ export const purchaseItem = async (req, res, next) => {
     if (!item) {
       return res.status(404).json({
         success: false,
-        message: 'Decoration item not found in shop',
+        message: 'Item not found in Vault catalog',
       });
     }
 
-    const user = await User.findById(req.user._id).populate('inventory.itemId');
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User account not found',
+      });
+    }
 
-    const alreadyOwns = user.inventory.some(
-      (entry) => entry.itemId && entry.itemId._id.toString() === item._id.toString()
-    );
+    // Check if user already owns this item
+    const alreadyOwns = (user.inventory || []).some((entry) => {
+      const idStr = (entry?._id || entry?.itemId || entry).toString();
+      return idStr === item._id.toString();
+    });
 
     if (alreadyOwns) {
       return res.status(400).json({
         success: false,
-        message: `You already own the ${item.name}!`,
+        message: `Item "${item.name}" already acquired in inventory.`,
       });
     }
 
-    if (user.level < item.unlockLevel) {
+    // Server-side level requirement check
+    if (user.level < item.requiredLevel) {
       return res.status(403).json({
         success: false,
-        message: `This item unlocks at Level ${item.unlockLevel}. Keep studying to level up! 📚`,
+        message: `Clearance level insufficient: Unlocks at Level ${item.requiredLevel}.`,
       });
     }
 
-    if (user.cozyCoins < item.cost) {
+    // Server-side gold currency check
+    if (user.cozyCoins < item.goldCost) {
       return res.status(400).json({
         success: false,
-        message: `Not enough Cozy Coins! You have ${user.cozyCoins} coins, but need ${item.cost}. Complete more quests to earn coins. 🪙`,
+        message: `Insufficient Gold: You have ${user.cozyCoins} G, but need ${item.goldCost} G.`,
       });
     }
 
-    user.cozyCoins -= item.cost;
-
-    if (['wallpaper', 'rug', 'lamp'].includes(item.category)) {
-      user.inventory.forEach((entry) => {
-        if (entry.itemId && entry.itemId.category === item.category) {
-          entry.equipped = false;
-        }
-      });
+    const targetSlot = item.itemType === 'crystal' ? 'aura' : item.itemType;
+    const updateOps = {
+      $inc: { cozyCoins: -item.goldCost },
+      $push: { inventory: item._id },
+    };
+    if (['hair', 'chest', 'pants', 'shoes', 'weapon', 'aura'].includes(targetSlot)) {
+      updateOps.$set = { [`equipped.${targetSlot}`]: item._id };
     }
 
-    user.inventory.push({
-      itemId: item._id,
-      equipped: true,
-      acquiredAt: new Date(),
-    });
-
-    await user.save();
-
-    const updatedUser = await User.findById(user._id).populate('inventory.itemId');
+    // Atomic purchase & equip in single query
+    const updatedUser = await populateUserEquipped(
+      User.findByIdAndUpdate(user._id, updateOps, { new: true })
+    );
 
     return res.status(200).json({
       success: true,
-      message: `Yay! You bought the ${item.name} and placed it in your study room! 🪴`,
+      message: `REQUISITION COMPLETE: "${item.name.toUpperCase()}" ACQUIRED & EQUIPPED.`,
       item,
       cozyCoins: updatedUser.cozyCoins,
       inventory: updatedUser.inventory,
+      equipped: updatedUser.equipped,
       user: {
+        _id: updatedUser._id,
         id: updatedUser._id,
         username: updatedUser.username,
         email: updatedUser.email,
+        role: updatedUser.role,
         level: updatedUser.level,
         currentXP: updatedUser.currentXP,
         xpToNextLevel: updatedUser.xpToNextLevel,
@@ -99,6 +107,7 @@ export const purchaseItem = async (req, res, next) => {
         skills: updatedUser.skills,
         streak: updatedUser.streak,
         inventory: updatedUser.inventory,
+        equipped: updatedUser.equipped,
       },
     });
   } catch (error) {

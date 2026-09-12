@@ -6,43 +6,86 @@ const itemSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Item name is required'],
       trim: true,
-      maxlength: [60, 'Name cannot exceed 60 characters'],
+      maxlength: [80, 'Name cannot exceed 80 characters'],
     },
-    description: {
-      type: String,
-      required: [true, 'Description is required'],
-      trim: true,
-      maxlength: [200, 'Description cannot exceed 200 characters'],
-    },
-    category: {
+    itemType: {
       type: String,
       enum: {
-        values: ['plant', 'lamp', 'poster', 'rug', 'mug', 'wallpaper'],
-        message: '{VALUE} is not a valid item category',
+        values: ['hair', 'chest', 'pants', 'shoes', 'weapon', 'aura', 'crystal'],
+        message: '{VALUE} is not a valid item type',
       },
-      required: true,
+      required: [true, 'Item type is required'],
       index: true,
+    },
+    requiredLevel: {
+      type: Number,
+      default: 1,
+      min: [1, 'Required level must be at least 1'],
+    },
+    goldCost: {
+      type: Number,
+      required: [true, 'Gold cost is required'],
+      min: [0, 'Gold cost cannot be negative'],
+    },
+    webpUrl: {
+      type: String,
+      required: [true, 'webpUrl is required to render sprite'],
+      trim: true,
+    },
+    frameCount: {
+      type: Number,
+      default: 4,
+      min: 1,
+    },
+    frameWidth: {
+      type: Number,
+      default: 64,
+      min: 16,
+    },
+    frameHeight: {
+      type: Number,
+      default: 64,
+      min: 16,
+    },
+    zIndex: {
+      type: Number,
+      default: function () {
+        const defaultZ = {
+          body: 0,
+          pants: 1,
+          shoes: 1,
+          chest: 2,
+          hair: 3,
+          weapon: 4,
+          aura: 5,
+          crystal: 5,
+        };
+        return defaultZ[this?.itemType] ?? 2;
+      },
+    },
+    // Backwards-compatible aliases for legacy references if any
+    slot: {
+      type: String,
     },
     cost: {
       type: Number,
-      required: [true, 'Cost is required'],
-      min: [0, 'Cost cannot be negative'],
     },
     unlockLevel: {
       type: Number,
-      default: 1,
-      min: [1, 'Unlock level must be at least 1'],
-    },
-    imageKey: {
-      type: String,
-      required: [true, 'imageKey is required to render decoration'],
-      trim: true,
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Keep aliases synced
+itemSchema.pre('save', function (next) {
+  this.slot = this.itemType;
+  this.cost = this.goldCost;
+  this.unlockLevel = this.requiredLevel;
+  next();
+});
 
 const Item = mongoose.model('Item', itemSchema);
 

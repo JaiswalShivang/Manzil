@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import { populateUserEquipped } from './equipController.js';
 
 const generateAccessToken = (userId) => {
   return jwt.sign(
@@ -41,6 +42,14 @@ const formatUserResponse = (user) => ({
   skills: user.skills,
   streak: user.streak,
   inventory: user.inventory,
+  equipped: user.equipped || {
+    hair: null,
+    chest: null,
+    pants: null,
+    shoes: null,
+    weapon: null,
+    aura: null,
+  },
 });
 
 export const register = async (req, res, next) => {
@@ -78,6 +87,14 @@ export const register = async (req, res, next) => {
         lastCompletedDate: null,
       },
       inventory: [],
+      equipped: {
+        hair: null,
+        chest: null,
+        pants: null,
+        shoes: null,
+        weapon: null,
+        aura: null,
+      },
     });
 
     const accessToken = generateAccessToken(user._id);
@@ -106,7 +123,7 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
     const normalizedEmail = email?.toLowerCase().trim();
 
-    const user = await User.findOne({ email: normalizedEmail }).populate('inventory.itemId');
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return res.status(401).json({
@@ -132,11 +149,13 @@ export const login = async (req, res, next) => {
 
     setRefreshTokenCookie(res, refreshToken);
 
+    const populatedUser = await populateUserEquipped(User.findById(user._id));
+
     return res.status(200).json({
       success: true,
       message: `Welcome back, ${user.username}!`,
       accessToken,
-      user: formatUserResponse(user),
+      user: formatUserResponse(populatedUser),
     });
   } catch (error) {
     next(error);
@@ -167,7 +186,7 @@ export const refresh = async (req, res, next) => {
       });
     }
 
-    const user = await User.findById(decoded.id).populate('inventory.itemId');
+    const user = await User.findById(decoded.id);
     if (!user || !user.refreshTokenHash) {
       return res.status(401).json({
         success: false,
@@ -192,10 +211,12 @@ export const refresh = async (req, res, next) => {
 
     setRefreshTokenCookie(res, newRefreshToken);
 
+    const populatedUser = await populateUserEquipped(User.findById(user._id));
+
     return res.status(200).json({
       success: true,
       accessToken: newAccessToken,
-      user: formatUserResponse(user),
+      user: formatUserResponse(populatedUser),
     });
   } catch (error) {
     next(error);

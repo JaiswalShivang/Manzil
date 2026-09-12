@@ -8,11 +8,11 @@ import {
   getQuests,
   completeQuest,
   deleteQuest,
-  getShopItems,
-  createShopItem,
-  updateShopItem,
-  deleteShopItem,
-  reseedShop,
+  getItems,
+  updateItem,
+  deleteItem,
+  uploadZipAssets,
+  uploadZipMiddleware,
   grantAllUsers,
 } from '../controllers/adminController.js';
 
@@ -34,14 +34,18 @@ router.get('/quests', getQuests);
 router.post('/quests/:id/complete', completeQuest);
 router.delete('/quests/:id', deleteQuest);
 
-// The Vault / Shop inventory CRUD
-router.get('/shop', getShopItems);
-router.post('/shop', createShopItem);
-router.patch('/shop/:id', updateShopItem);
-router.delete('/shop/:id', deleteShopItem);
+// Paperdoll Avatar Item Management CRUD & Asset Zip Upload
+router.post('/assets/upload', uploadZipMiddleware.single('file'), uploadZipAssets);
+router.get('/items', getItems);
+router.patch('/items/:id', updateItem);
+router.delete('/items/:id', deleteItem);
+
+// Backwards compatibility aliases for /shop
+router.get('/shop', getItems);
+router.patch('/shop/:id', updateItem);
+router.delete('/shop/:id', deleteItem);
 
 // System level actions
-router.post('/system/seed', reseedShop);
 router.post('/system/grant-all', grantAllUsers);
 
 export default router;

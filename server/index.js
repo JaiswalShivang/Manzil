@@ -8,7 +8,13 @@ import userRoutes from './routes/userRoutes.js';
 import questRoutes from './routes/questRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import equipRoutes from './routes/equipRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -68,10 +74,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Static paperdoll sprite assets serving
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+app.use('/public/assets', express.static(path.join(__dirname, 'public/assets')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/quests', questRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/equip', equipRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use('/api/*', (req, res) => {

@@ -79,7 +79,20 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
-    inventory: [inventoryItemSchema],
+    equipped: {
+      hair: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
+      chest: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
+      pants: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
+      shoes: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
+      weapon: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
+      aura: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
+    },
+    inventory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Item',
+      },
+    ],
     refreshTokenHash: {
       type: String,
       default: null,

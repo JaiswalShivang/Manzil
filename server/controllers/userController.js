@@ -1,9 +1,9 @@
 import User from '../models/User.js';
-import Item from '../models/Item.js';
+import { populateUserEquipped } from './equipController.js';
 
 export const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).populate('inventory.itemId');
+    const user = await populateUserEquipped(User.findById(req.user._id));
 
     if (!user) {
       return res.status(404).json({
@@ -18,6 +18,7 @@ export const getMe = async (req, res, next) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        role: user.role,
         level: user.level,
         currentXP: user.currentXP,
         xpToNextLevel: user.xpToNextLevel,
@@ -25,6 +26,14 @@ export const getMe = async (req, res, next) => {
         skills: user.skills,
         streak: user.streak,
         inventory: user.inventory,
+        equipped: user.equipped || {
+          hair: null,
+          chest: null,
+          pants: null,
+          shoes: null,
+          weapon: null,
+          aura: null,
+        },
         createdAt: user.createdAt,
       },
     });
@@ -35,9 +44,7 @@ export const getMe = async (req, res, next) => {
 
 export const updateMe = async (req, res, next) => {
   try {
-    const { equipItemId, unequipItemId } = req.body;
-
-    const user = await User.findById(req.user._id).populate('inventory.itemId');
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({
@@ -46,51 +53,18 @@ export const updateMe = async (req, res, next) => {
       });
     }
 
-    if (equipItemId) {
-      const invEntry = user.inventory.find(
-        (entry) => entry.itemId && entry.itemId._id.toString() === equipItemId.toString()
-      );
-
-      if (!invEntry) {
-        return res.status(400).json({
-          success: false,
-          message: 'You do not own this decoration item yet!',
-        });
-      }
-
-      const targetCategory = invEntry.itemId.category;
-      if (['wallpaper', 'rug', 'lamp'].includes(targetCategory)) {
-        user.inventory.forEach((entry) => {
-          if (entry.itemId && entry.itemId.category === targetCategory) {
-            entry.equipped = false;
-          }
-        });
-      }
-
-      invEntry.equipped = true;
-    }
-
-    if (unequipItemId) {
-      const invEntry = user.inventory.find(
-        (entry) => entry.itemId && entry.itemId._id.toString() === unequipItemId.toString()
-      );
-
-      if (invEntry) {
-        invEntry.equipped = false;
-      }
-    }
-
     await user.save();
 
-    const updatedUser = await User.findById(user._id).populate('inventory.itemId');
+    const updatedUser = await populateUserEquipped(User.findById(user._id));
 
     return res.status(200).json({
       success: true,
-      message: 'Room decoration updated!',
+      message: 'Profile updated!',
       user: {
         id: updatedUser._id,
         username: updatedUser.username,
         email: updatedUser.email,
+        role: updatedUser.role,
         level: updatedUser.level,
         currentXP: updatedUser.currentXP,
         xpToNextLevel: updatedUser.xpToNextLevel,
@@ -98,6 +72,7 @@ export const updateMe = async (req, res, next) => {
         skills: updatedUser.skills,
         streak: updatedUser.streak,
         inventory: updatedUser.inventory,
+        equipped: updatedUser.equipped,
       },
     });
   } catch (error) {
