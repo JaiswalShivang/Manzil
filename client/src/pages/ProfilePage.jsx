@@ -177,8 +177,8 @@ export const ProfilePage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       {/* Profile Dossier Banner */}
-      <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="flex items-start sm:items-center gap-6">
+      <div className="bg-[#FAF3E8] border-3 border-[#141414] p-4 sm:p-6 lg:p-8 shadow-brutal flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left w-full sm:w-auto">
           <div className="w-24 h-24 bg-[#2B4AE8] border-3 border-[#141414] flex items-center justify-center relative overflow-hidden shadow-brutal-sm shrink-0">
             <Avatar equipped={user?.equipped} scale={2} />
           </div>
@@ -187,7 +187,7 @@ export const ProfilePage = () => {
             <div className="inline-block bg-[#E8402C] text-white text-[10px] font-mono font-black px-2 py-0.5 mb-1.5 uppercase">
               // ACTIVE OPERATIVE RIG
             </div>
-            <div className="flex flex-wrap items-baseline gap-3">
+            <div className="flex flex-wrap items-baseline justify-center sm:justify-start gap-3">
               <h1 className="text-3xl sm:text-4xl font-black text-[#141414] font-space uppercase tracking-tight">
                 {user?.username || 'AGENT-01'}
               </h1>
@@ -196,10 +196,10 @@ export const ProfilePage = () => {
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs font-mono font-bold text-[#141414] mt-3 pt-3 border-t border-[#141414]/20">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 text-xs font-mono font-bold text-[#141414] mt-3 pt-3 border-t border-[#141414]/20">
               <span className="flex items-center gap-1.5 bg-[#F5F3EF] px-2.5 py-1 border border-[#141414]">
                 <Flame className="w-4 h-4 text-[#E8402C]" />
-                STREAK: {user?.streak?.count || 0} CONSECUTIVE DAYS
+                STREAK: {user?.streak?.count || 0} DAYS
               </span>
               <span className="flex items-center gap-1.5 bg-[#F2B705] px-2.5 py-1 border border-[#141414] text-[#141414]">
                 <Coins className="w-4 h-4" />

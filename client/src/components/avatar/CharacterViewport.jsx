@@ -49,22 +49,22 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLo
   const equippedCount = slots.filter((s) => Boolean(equipped[s.key])).length;
 
   return (
-    <div className="bg-white border-3 border-[#141414] shadow-brutal-lg p-6 sm:p-8 space-y-6">
+    <div className="bg-white border-3 border-[#141414] shadow-brutal-lg p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Viewport Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#141414] pb-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#141414] uppercase tracking-tight">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-black text-[#141414] uppercase tracking-tight">
             ADVENTURER STATUS: {user?.username || 'ADVENTURER'}
           </h2>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="bg-[#FAF3E8] border-2 border-[#141414] px-3 py-1.5 text-xs font-heading font-black uppercase">
             GEAR MOUNTED: <span className="text-[#E8402C]">{equippedCount} / 6</span>
           </div>
           <Link
             to="/shop"
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#E8402C] hover:bg-[#141414] text-[#F5F3EF] border-2 border-[#141414] font-heading font-black text-xs uppercase shadow-brutal-sm transition-none cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 bg-[#E8402C] hover:bg-[#141414] text-[#F5F3EF] border-2 border-[#141414] font-heading font-black text-xs uppercase shadow-brutal-sm transition-none cursor-pointer"
           >
             <span>THE VAULT</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -73,7 +73,7 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLo
       </div>
 
       {/* Main Grid: Avatar Viewport Stage + Equipment Slots */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
         {/* Left Stage: Bold Bauhaus Bordered Viewport */}
         <div className="lg:col-span-5 flex flex-col items-center">
           <div className="relative border-4 border-[#141414] p-2 bg-[#141414] shadow-brutal">
@@ -84,7 +84,7 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLo
             <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-[#141414] border-2 border-[#FAF3E8] z-10" />
 
             {/* High-Contrast Backdrop Block */}
-            <div className="relative w-64 h-64 sm:w-72 sm:h-72 bg-[#2B4AE8] flex items-center justify-center border-2 border-[#141414] overflow-hidden">
+            <div className="relative w-56 h-56 xs:w-64 xs:h-64 sm:w-72 sm:h-72 bg-[#2B4AE8] flex items-center justify-center border-2 border-[#141414] overflow-hidden">
               {/* Subtle Bauhaus Graphic Geometry Background */}
               <div className="absolute inset-0 opacity-20 pointer-events-none">
                 <div className="absolute top-0 right-0 w-36 h-36 bg-[#F2B705] -rotate-12 transform translate-x-8 -translate-y-8" />

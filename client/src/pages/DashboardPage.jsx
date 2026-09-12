@@ -190,7 +190,7 @@ export const DashboardPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div className="bg-white border-3 border-[#141414] p-6 sm:p-8 shadow-brutal-lg">
+      <div className="bg-white border-3 border-[#141414] p-4 sm:p-6 lg:p-8 shadow-brutal-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl sm:text-4xl font-heading font-black text-[#141414] tracking-tight">
@@ -198,27 +198,27 @@ export const DashboardPage = () => {
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
             {/* Level Badge */}
-            <div className="bg-[#2B4AE8] text-[#F5F3EF] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+            <div className="bg-[#2B4AE8] text-[#F5F3EF] border-2 border-[#141414] px-3 sm:px-4 py-2 shadow-brutal-sm flex flex-col justify-center">
               <div className="text-[10px] font-heading font-black uppercase">CLEARANCE</div>
-              <div className="text-xl font-heading font-black">LV. {user?.level || 1}</div>
+              <div className="text-lg sm:text-xl font-heading font-black">LV. {user?.level || 1}</div>
             </div>
 
             {/* Streak Badge */}
-            <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+            <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3 sm:px-4 py-2 shadow-brutal-sm flex flex-col justify-center">
               <div className="text-[10px] font-heading font-black uppercase flex items-center gap-1">
                 <Flame className="w-3 h-3 fill-current" /> STREAK
               </div>
-              <div className="text-xl font-heading font-black">{user?.streak?.count || 0} DAYS</div>
+              <div className="text-lg sm:text-xl font-heading font-black">{user?.streak?.count || 0} DAYS</div>
             </div>
 
             {/* Gold Badge */}
-            <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+            <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-3 sm:px-4 py-2 shadow-brutal-sm flex flex-col justify-center">
               <div className="text-[10px] font-heading font-black uppercase flex items-center gap-1">
                 <Coins className="w-3 h-3" /> GOLD
               </div>
-              <div className="text-xl font-heading font-black">{user?.cozyCoins || 0}</div>
+              <div className="text-lg sm:text-xl font-heading font-black">{user?.cozyCoins || 0}</div>
             </div>
 
             {/* Quick Add Button */}
@@ -226,7 +226,7 @@ export const DashboardPage = () => {
               onClick={() => setIsModalOpen(true)}
               variant="ink"
               size="md"
-              className="font-black"
+              className="font-black col-span-2 sm:col-span-1 justify-center"
             >
               <Plus className="w-4 h-4" />
               <span>LOG QUEST</span>

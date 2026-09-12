@@ -79,7 +79,7 @@ export const QuestCard = ({
       </div>
 
       {/* Footer: Rewards & Actions */}
-      <div className="flex items-center justify-between pt-3 border-t-2 border-[#141414] mt-auto">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t-2 border-[#141414] mt-auto">
         <div className="flex items-center gap-2 text-xs font-heading font-black uppercase">
           <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0.5 border border-[#141414]">
             +{quest.xpReward} XP

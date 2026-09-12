@@ -27,7 +27,7 @@ export const Modal = ({
       onClick={onClose}
     >
       <div
-        className={`w-full ${maxWidth} bg-[#F5F3EF] border-3 border-[#141414] p-6 shadow-brutal-lg relative transform scale-100`}
+        className={`w-full ${maxWidth} bg-[#F5F3EF] border-3 border-[#141414] p-4 sm:p-6 shadow-brutal-lg relative transform scale-100 max-h-[92vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

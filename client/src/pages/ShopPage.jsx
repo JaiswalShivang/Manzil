@@ -176,7 +176,7 @@ export const ShopPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Overwatch Header Banner */}
-      <div className="bg-[#141414] text-[#F5F3EF] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#141414] text-[#F5F3EF] border-3 border-[#141414] p-4 sm:p-6 lg:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-heading font-black tracking-tight uppercase text-white">
             THE VAULT
@@ -184,24 +184,24 @@ export const ShopPage = () => {
         </div>
 
         {/* Live User Telemetry Badge */}
-        <div className="flex items-center gap-4">
-          <div className="bg-[#2B4AE8] text-white border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+        <div className="grid grid-cols-2 sm:flex items-stretch sm:items-center gap-2 sm:gap-4 w-full md:w-auto">
+          <div className="bg-[#2B4AE8] text-white border-2 border-[#141414] px-3 sm:px-4 py-2 shadow-brutal-sm flex flex-col justify-center">
             <div className="text-[10px] font-heading font-black uppercase">CLEARANCE</div>
-            <div className="text-xl font-heading font-black">LV. {user?.level || 1}</div>
+            <div className="text-lg sm:text-xl font-heading font-black">LV. {user?.level || 1}</div>
           </div>
 
-          <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+          <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-3 sm:px-4 py-2 shadow-brutal-sm flex flex-col justify-center">
             <div className="text-[10px] font-heading font-black uppercase flex items-center gap-1">
-              <Coins className="w-3.5 h-3.5" /> AVAILABLE GOLD
+              <Coins className="w-3.5 h-3.5" /> GOLD
             </div>
-            <div className="text-xl font-heading font-black">{user?.cozyCoins || 0}</div>
+            <div className="text-lg sm:text-xl font-heading font-black">{user?.cozyCoins || 0}</div>
           </div>
         </div>
       </div>
 
       {/* Live Fitting Room Character Preview Banner */}
-      <div className="bg-[#FAF3E8] border-3 border-[#141414] p-4 sm:p-6 shadow-brutal flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-5">
+      <div className="bg-[#FAF3E8] border-3 border-[#141414] p-4 sm:p-6 shadow-brutal flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left">
           <div className="w-24 h-24 bg-[#2B4AE8] border-3 border-[#141414] flex items-center justify-center relative overflow-hidden shadow-brutal-sm shrink-0">
             <Avatar equipped={userEquipped} scale={2} />
           </div>
