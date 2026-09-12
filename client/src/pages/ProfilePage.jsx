@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
 import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/avatar/Avatar';
 import {
   BookOpen,
   Heart,
@@ -16,10 +17,25 @@ export const ProfilePage = () => {
   const { user, updateUserData, logout } = useAuth();
   const queryClient = useQueryClient();
 
-  // Equip/Unequip Mutation
+  // Equip Mutation via /api/equip
   const equipMutation = useMutation({
+    mutationFn: async (itemId) => {
+      const res = await api.patch('/equip', { itemId });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.user) {
+        updateUserData(data.user);
+      }
+      queryClient.invalidateQueries({ queryKey: ['shop'] });
+    },
+  });
+
+  // Unequip Mutation via /api/equip/unequip
+  const unequipMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await api.patch('/users/me', payload);
+      const body = typeof payload === 'string' ? { itemType: payload } : payload;
+      const res = await api.patch('/equip/unequip', body);
       return res.data;
     },
     onSuccess: (data) => {
@@ -93,21 +109,20 @@ export const ProfilePage = () => {
       {/* Profile Dossier Banner */}
       <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-start sm:items-center gap-6">
-          <div className="w-20 h-20 bg-[#141414] border-3 border-[#141414] flex flex-col items-center justify-center text-white shrink-0">
-            <span className="text-[10px] font-mono text-[#F2B705] tracking-widest font-black">RANK</span>
-            <span className="text-2xl font-black font-space leading-none mt-1">LV.{user?.level || 1}</span>
+          <div className="w-24 h-24 bg-[#2B4AE8] border-3 border-[#141414] flex items-center justify-center relative overflow-hidden shadow-brutal-sm shrink-0">
+            <Avatar equipped={user?.equipped} scale={2} />
           </div>
 
           <div>
             <div className="inline-block bg-[#E8402C] text-white text-[10px] font-mono font-black px-2 py-0.5 mb-1.5 uppercase">
-              // ACTIVE AGENT DOSSIER
+              // ACTIVE OPERATIVE RIG
             </div>
             <div className="flex flex-wrap items-baseline gap-3">
               <h1 className="text-3xl sm:text-4xl font-black text-[#141414] font-space uppercase tracking-tight">
                 {user?.username || 'AGENT-01'}
               </h1>
               <span className="text-xs font-mono font-bold text-[#141414]/60">
-                [{user?.email}]
+                [LV.{user?.level || 1} • {user?.email}]
               </span>
             </div>
 
@@ -266,50 +281,73 @@ export const ProfilePage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {inventory.map((inv) => {
-              const item = inv.itemId;
-              if (!item) return null;
+              const item = inv?.itemId || inv;
+              if (!item || !item.name) return null;
+
+              const slotKey = item.itemType === 'crystal' ? 'aura' : item.itemType || item.slot || 'chest';
+              const equippedItemInSlot = user?.equipped?.[slotKey];
+              const isMounted =
+                (equippedItemInSlot?._id || equippedItemInSlot)?.toString() === item._id.toString();
 
               return (
                 <div
                   key={item._id}
                   className="bg-[#FAF3E8] border-3 border-[#141414] p-5 shadow-brutal flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-4">
-                    <div>
-                      <span className="text-xs font-mono font-bold text-[#141414]/60 uppercase block">
-                        [{item.category}]
-                      </span>
-                      <span className="text-sm font-black font-space text-[#141414] uppercase block mt-1">
-                        {item.name}
-                      </span>
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div>
+                        <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 bg-[#141414] text-white">
+                          [{slotKey}]
+                        </span>
+                        <span className="text-sm font-black font-space text-[#141414] uppercase block mt-1.5">
+                          {item.name}
+                        </span>
+                      </div>
+                      {isMounted ? (
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#2B4AE8] text-white border border-[#141414] uppercase">
+                          EQUIPPED
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#F5F3EF] text-[#141414]/70 border border-[#141414] uppercase">
+                          STANDBY
+                        </span>
+                      )}
                     </div>
-                    {inv.equipped ? (
-                      <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-[#2B4AE8] text-white border border-[#141414] uppercase">
-                        MOUNTED
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#F5F3EF] text-[#141414]/70 border border-[#141414] uppercase">
-                        STANDBY
-                      </span>
-                    )}
+
+                    {/* Animated Sprite Thumbnail */}
+                    <div className="w-full h-24 bg-[#F5F3EF] border-2 border-[#141414] flex items-center justify-center my-3 relative overflow-hidden">
+                      {item.webpUrl ? (
+                        <div
+                          className="sprite-layer transform scale-90"
+                          style={{ backgroundImage: `url('${item.webpUrl}')` }}
+                        />
+                      ) : (
+                        <span className="text-xs font-mono">📦</span>
+                      )}
+                    </div>
+
+                    <div className="text-[10px] font-mono font-bold text-[#141414]/60 uppercase">
+                      REQ: LV.{item.requiredLevel || item.unlockLevel || 1}
+                    </div>
                   </div>
 
                   <div className="pt-3 border-t-2 border-[#141414]/20 mt-3">
-                    {inv.equipped ? (
+                    {isMounted ? (
                       <button
-                        onClick={() => equipMutation.mutate({ unequipItemId: item._id })}
-                        disabled={equipMutation.isPending}
+                        onClick={() => unequipMutation.mutate({ itemType: slotKey, itemId: item._id })}
+                        disabled={unequipMutation.isPending}
                         className="w-full py-2 bg-[#F5F3EF] hover:bg-[#141414] text-[#141414] hover:text-white border-2 border-[#141414] text-xs font-mono font-bold uppercase transition-none cursor-pointer"
                       >
-                        DEMOUNT ASSET
+                        UNEQUIP PIECE
                       </button>
                     ) : (
                       <button
-                        onClick={() => equipMutation.mutate({ equipItemId: item._id })}
+                        onClick={() => equipMutation.mutate(item._id)}
                         disabled={equipMutation.isPending}
-                        className="w-full py-2 bg-[#E8402C] hover:bg-[#141414] text-white border-2 border-[#141414] text-xs font-mono font-bold uppercase transition-none cursor-pointer"
+                        className="w-full py-2 bg-[#E8402C] hover:bg-[#141414] text-white border-2 border-[#141414] text-xs font-mono font-bold uppercase transition-none cursor-pointer shadow-brutal-sm"
                       >
-                        MOUNT IN HQ →
+                        EQUIP TO RIG →
                       </button>
                     )}
                   </div>

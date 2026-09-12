@@ -90,3 +90,24 @@ button:active:not(:disabled) {
   outline: 3px solid #E8402C !important;
   outline-offset: 2px;
 }
+
+/* Pixel-snapped Paperdoll Sprite Animation */
+@keyframes spriteWalk {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -256px 0;
+  }
+}
+
+.sprite-layer {
+  width: 64px;
+  height: 64px;
+  background-repeat: no-repeat;
+  background-size: 256px 64px;
+  animation: spriteWalk 0.8s steps(4) infinite;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}

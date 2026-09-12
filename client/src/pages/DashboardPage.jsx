@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
-import { StudyRoomScene } from '../components/room/StudyRoomScene';
+import { CharacterViewport } from '../components/avatar/CharacterViewport';
 import { QuestCard } from '../components/quest/QuestCard';
 import { QuestFormModal } from '../components/quest/QuestFormModal';
 import { LevelUpModal } from '../components/levelup/LevelUpModal';
@@ -104,14 +104,46 @@ export const DashboardPage = () => {
     },
   });
 
-  // Calculate XP percentage
+  const unequipMutation = useMutation({
+    mutationFn: async (payload) => {
+      const body = typeof payload === 'string' ? { itemType: payload } : payload;
+      const res = await api.patch('/equip/unequip', body);
+      return res.data;
+    },
+    onMutate: async (payload) => {
+      const previousUser = user;
+      let targetSlot = typeof payload === 'string' ? payload : payload?.itemType;
+      if (targetSlot === 'crystal') targetSlot = 'aura';
+      if (targetSlot) {
+        updateUserData({
+          equipped: {
+            ...(user?.equipped || {}),
+            [targetSlot]: null,
+          },
+        });
+      }
+      return { previousUser };
+    },
+    onSuccess: (data) => {
+      if (data.user) {
+        updateUserData(data.user);
+      }
+      queryClient.invalidateQueries({ queryKey: ['shop'] });
+    },
+    onError: (err, payload, context) => {
+      if (context?.previousUser) {
+        updateUserData(context.previousUser);
+      }
+      setActionError(err.response?.data?.message || 'Could not unequip item');
+    },
+  });
+
   const currentXP = user?.currentXP || 0;
   const xpToNext = user?.xpToNextLevel || 100;
   const xpPercentage = Math.min(100, Math.round((currentXP / xpToNext) * 100));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Welcome & Progression HUD Panel */}
       <div className="bg-white border-3 border-[#141414] p-6 sm:p-8 shadow-brutal-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div>
@@ -192,27 +224,12 @@ export const DashboardPage = () => {
         </div>
       )}
 
-      {/* HQ Command Deck Visual Rig */}
-      <div>
-        <div className="flex items-center justify-between mb-3 px-1">
-          <div>
-            <h2 className="text-2xl font-heading font-black text-[#141414] uppercase">
-              COMMAND DECK RIG
-            </h2>
-            <p className="text-xs font-heading font-bold uppercase text-[#141414]/60">
-              PHYSICAL HARDWARE EQUIPPED VIA THE VAULT
-            </p>
-          </div>
-          <Link
-            to="/shop"
-            className="text-xs font-heading font-black text-[#E8402C] hover:text-[#141414] flex items-center gap-1 transition-colors uppercase"
-          >
-            ACCESS THE VAULT <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <StudyRoomScene user={user} />
-      </div>
+      {/* Character Viewport Paperdoll Rig */}
+      <CharacterViewport
+        user={user}
+        onUnequip={(slot) => unequipMutation.mutate(slot)}
+        isUnequipping={unequipMutation.isPending}
+      />
 
       {/* Active Quests Section */}
       <div>

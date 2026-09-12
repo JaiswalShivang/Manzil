@@ -3,19 +3,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import { Button } from '../components/ui/Button';
-import { Input, Textarea } from '../components/ui/Input';
+import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import {
   Users,
   ScrollText,
   Store,
   Activity,
-  Plus,
-  Trash2,
   RefreshCw,
   Coins,
   Search,
   Sliders,
+  UploadCloud,
+  FileArchive,
+  CheckCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const AdminPage = () => {
@@ -37,20 +39,15 @@ export const AdminPage = () => {
 
   // Modals State
   const [editingUser, setEditingUser] = useState(null);
-  const [isAddItemOpen, setIsAddItemOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [newItem, setNewItem] = useState({
-    name: '',
-    description: '',
-    category: 'plant',
-    cost: 50,
-    unlockLevel: 1,
-    imageKey: 'plant_succulent',
-  });
 
   // Bulk actions state
   const [goldBonusAmount, setGoldBonusAmount] = useState(100);
   const [notification, setNotification] = useState(null);
+
+  // Asset Zip Upload State
+  const [selectedZip, setSelectedZip] = useState(null);
+  const [uploadSummary, setUploadSummary] = useState(null);
+  const [itemRowEdits, setItemRowEdits] = useState({});
 
   const isAdmin = user?.role === 'admin';
 
@@ -160,63 +157,53 @@ export const AdminPage = () => {
     },
   });
 
-  const createItemMutation = useMutation({
-    mutationFn: async (itemData) => {
-      const res = await api.post('/admin/shop', itemData);
+  const uploadZipMutation = useMutation({
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api.post('/admin/assets/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       return res.data;
     },
     onSuccess: (data) => {
+      setUploadSummary(data);
+      setSelectedZip(null);
       setNotification({ type: 'success', message: data.message });
-      setIsAddItemOpen(false);
-      setNewItem({
-        name: '',
-        description: '',
-        category: 'plant',
-        cost: 50,
-        unlockLevel: 1,
-        imageKey: 'plant_succulent',
-      });
       queryClient.invalidateQueries({ queryKey: ['admin', 'shop'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['shop'] });
     },
     onError: (err) => {
-      setNotification({ type: 'error', message: err.response?.data?.message || 'Creation failed' });
+      setNotification({
+        type: 'error',
+        message: err.response?.data?.message || 'Archive upload failed',
+      });
     },
   });
 
   const updateItemMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const res = await api.patch(`/admin/shop/${id}`, data);
+      const res = await api.patch(`/admin/items/${id}`, data);
       return res.data;
     },
     onSuccess: (data) => {
       setNotification({ type: 'success', message: data.message });
-      setEditingItem(null);
       queryClient.invalidateQueries({ queryKey: ['admin', 'shop'] });
+      queryClient.invalidateQueries({ queryKey: ['shop'] });
     },
   });
 
   const deleteItemMutation = useMutation({
     mutationFn: async (id) => {
-      const res = await api.delete(`/admin/shop/${id}`);
+      const res = await api.delete(`/admin/items/${id}`);
       return res.data;
     },
     onSuccess: (data) => {
       setNotification({ type: 'success', message: data.message });
       queryClient.invalidateQueries({ queryKey: ['admin', 'shop'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
-    },
-  });
-
-  const reseedShopMutation = useMutation({
-    mutationFn: async () => {
-      const res = await api.post('/admin/system/seed');
-      return res.data;
-    },
-    onSuccess: (data) => {
-      setNotification({ type: 'success', message: data.message });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'shop'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['shop'] });
     },
   });
 
@@ -371,7 +358,7 @@ export const AdminPage = () => {
           { id: 'overview', label: '01 OVERVIEW & TELEMETRY', icon: Activity },
           { id: 'users', label: `02 AGENTS (${usersData?.length || 0})`, icon: Users },
           { id: 'quests', label: `03 DIRECTIVES (${questsData?.length || 0})`, icon: ScrollText },
-          { id: 'shop', label: `04 THE VAULT (${shopData?.length || 0})`, icon: Store },
+          { id: 'shop', label: `04 SPRITE CMS (${shopData?.length || 0})`, icon: Store },
           { id: 'system', label: '05 SYSTEM PROTOCOLS', icon: Sliders },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -674,69 +661,271 @@ export const AdminPage = () => {
       )}
 
       {/* -------------------------------------------------------------
-          TAB 4: THE VAULT CATALOG
+          TAB 4: PAPERDOLL AVATAR CMS & ZIP INGESTION
          ------------------------------------------------------------- */}
       {activeTab === 'shop' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black font-space uppercase text-[#141414]">
-              CATALOGED VAULT HARDWARE ({shopData?.length || 0})
-            </h2>
-            <button
-              onClick={() => setIsAddItemOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#E8402C] text-white border-2 border-[#141414] font-mono text-xs font-black uppercase cursor-pointer shadow-brutal-sm hover:bg-[#141414]"
-            >
-              <Plus className="w-4 h-4" /> CATALOG NEW ASSET
-            </button>
-          </div>
+        <div className="space-y-8">
+          {/* Section 1: Drag & Drop / File Input Zip Upload Zone */}
+          <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-mono font-bold text-[#2B4AE8] block uppercase">
+                  // SPRITE ASSET INGESTION PIPELINE
+                </span>
+                <h2 className="text-2xl font-black font-space uppercase text-[#141414]">
+                  BULK SPRITE ZIP UPLOAD (ADMIN CMS)
+                </h2>
+              </div>
+              <span className="text-[11px] font-mono font-bold bg-[#141414] text-white px-2 py-1 uppercase">
+                ZIP-SLIP PROTECTED
+              </span>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {(shopData || []).map((item) => (
-              <div
-                key={item._id}
-                className="bg-[#FAF3E8] border-3 border-[#141414] p-5 shadow-brutal flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-[10px] font-mono font-bold uppercase text-[#141414]/60">
-                      [{item.category}]
-                    </span>
-                    <span className="px-2 py-0.5 bg-[#F2B705] text-[#141414] border border-[#141414] text-[10px] font-black font-mono">
-                      {item.cost} GOLD
-                    </span>
-                  </div>
+            <p className="text-xs font-mono text-[#141414]/70 uppercase">
+              Upload any sprite archive (.zip) containing .webp or .png LPC sprite sheets. The server will validate path traversal, extract the 4-frame walk cycle into 256x64 .webp strips, and register items automatically.
+            </p>
 
-                  <h3 className="font-black font-space text-sm text-[#141414] uppercase">
-                    {item.name}
-                  </h3>
-                  <p className="text-xs font-mono text-[#141414]/70 mt-1 mb-3">
-                    {item.description}
-                  </p>
-                  <div className="text-[10px] font-mono font-bold text-[#141414]/60">
-                    REQUIRED CLEARANCE: LV.{item.unlockLevel}
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t-2 border-[#141414]/20 mt-4 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => setEditingItem(item)}
-                    className="flex-1 py-1.5 bg-[#2B4AE8] text-white border border-[#141414] text-[10px] font-mono font-black uppercase cursor-pointer"
-                  >
-                    REVISE
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Decommission asset ${item.name}?`)) {
-                        deleteItemMutation.mutate(item._id);
+            <div className="border-3 border-dashed border-[#141414] bg-[#F5F3EF] p-8 text-center flex flex-col items-center justify-center space-y-4">
+              <UploadCloud className="w-12 h-12 text-[#2B4AE8]" />
+              <div>
+                <label className="cursor-pointer px-4 py-2.5 bg-[#2B4AE8] hover:bg-[#141414] text-white border-2 border-[#141414] font-mono text-xs font-black uppercase inline-block shadow-brutal-sm">
+                  <span>SELECT .ZIP ARCHIVE</span>
+                  <input
+                    type="file"
+                    accept=".zip"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setSelectedZip(e.target.files[0]);
                       }
                     }}
-                    className="px-2 py-1.5 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-mono font-black uppercase cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                  />
+                </label>
+                {selectedZip && (
+                  <div className="mt-2 text-xs font-mono font-bold text-[#141414] flex items-center justify-center gap-1.5">
+                    <FileArchive className="w-4 h-4 text-[#E8402C]" />
+                    <span>{selectedZip.name} ({(selectedZip.size / 1024).toFixed(1)} KB)</span>
+                  </div>
+                )}
               </div>
-            ))}
+
+              {selectedZip && (
+                <button
+                  onClick={() => uploadZipMutation.mutate(selectedZip)}
+                  disabled={uploadZipMutation.isPending}
+                  className="px-6 py-2.5 bg-[#E8402C] hover:bg-[#141414] text-white border-2 border-[#141414] font-mono text-xs font-black uppercase cursor-pointer shadow-brutal-sm disabled:opacity-50"
+                >
+                  {uploadZipMutation.isPending ? 'EXTRACTING & CONVERTING SPRITES...' : 'UPLOAD & PROCESS ARCHIVE →'}
+                </button>
+              )}
+            </div>
+
+            {/* Upload Result Summary Banner */}
+            {uploadSummary && (
+              <div className="p-4 border-2 border-[#141414] bg-white shadow-brutal-sm space-y-2">
+                <div className="flex items-center gap-2 text-xs font-mono font-black text-[#2B4AE8] uppercase">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>IMPORT SUMMARY: {uploadSummary.imported} ITEMS CREATED / UPDATED</span>
+                </div>
+
+                {uploadSummary.skipped?.length > 0 && (
+                  <div className="mt-2 text-[11px] font-mono space-y-1">
+                    <div className="font-bold text-[#E8402C] flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>{uploadSummary.skipped.length} ENTRIES SKIPPED:</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-[#141414]/70 space-y-0.5">
+                      {uploadSummary.skipped.map((sk, idx) => (
+                        <li key={idx}>
+                          <span className="font-bold">{sk.filename}:</span> {sk.reason}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Avatar Sprite Catalog Table with Inline Editing */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black font-space uppercase text-[#141414]">
+                REGISTERED AVATAR SPRITES ({shopData?.length || 0})
+              </h2>
+              <span className="text-xs font-mono text-[#141414]/60 uppercase">
+                INLINE EDIT CLEARANCE LEVEL & GOLD COST PER ITEM
+              </span>
+            </div>
+
+            <div className="bg-[#FAF3E8] border-3 border-[#141414] shadow-brutal overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs font-mono">
+                <thead>
+                  <tr className="bg-[#141414] text-white border-b-2 border-[#141414]">
+                    <th className="p-3 font-black">SPRITE</th>
+                    <th className="p-3 font-black">ASSET NAME</th>
+                    <th className="p-3 font-black">SLOT</th>
+                    <th className="p-3 font-black">REQ. LEVEL</th>
+                    <th className="p-3 font-black">GOLD COST</th>
+                    <th className="p-3 font-black">Z-INDEX</th>
+                    <th className="p-3 font-black text-right">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-2 divide-[#141414]/10">
+                  {(shopData || []).map((item) => {
+                    const rowEdit = itemRowEdits[item._id] || {};
+                    const curLevel = rowEdit.requiredLevel !== undefined ? rowEdit.requiredLevel : item.requiredLevel || item.unlockLevel || 1;
+                    const curCost = rowEdit.goldCost !== undefined ? rowEdit.goldCost : item.goldCost !== undefined ? item.goldCost : item.cost || 0;
+                    const curZ = rowEdit.zIndex !== undefined ? rowEdit.zIndex : item.zIndex || 2;
+                    const curName = rowEdit.name !== undefined ? rowEdit.name : item.name;
+
+                    const hasChanges =
+                      rowEdit.requiredLevel !== undefined ||
+                      rowEdit.goldCost !== undefined ||
+                      rowEdit.zIndex !== undefined ||
+                      rowEdit.name !== undefined;
+
+                    return (
+                      <tr key={item._id} className="hover:bg-white transition-none">
+                        <td className="p-3">
+                          <div className="w-12 h-12 bg-[#F5F3EF] border border-[#141414] flex items-center justify-center relative overflow-hidden">
+                            {item.webpUrl ? (
+                              <div
+                                className="sprite-layer transform scale-75"
+                                style={{ backgroundImage: `url('${item.webpUrl}')` }}
+                              />
+                            ) : (
+                              <span className="text-xs">📦</span>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="p-3 font-black">
+                          <input
+                            type="text"
+                            value={curName}
+                            onChange={(e) =>
+                              setItemRowEdits((prev) => ({
+                                ...prev,
+                                [item._id]: { ...prev[item._id], name: e.target.value },
+                              }))
+                            }
+                            className="w-44 px-2 py-1 bg-white border border-[#141414] text-xs font-mono font-bold"
+                          />
+                        </td>
+
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-[#141414] text-white">
+                            {item.itemType || item.category || 'ITEM'}
+                          </span>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="flex items-center gap-1">
+                            <span>LV.</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="99"
+                              value={curLevel}
+                              onChange={(e) =>
+                                setItemRowEdits((prev) => ({
+                                  ...prev,
+                                  [item._id]: {
+                                    ...prev[item._id],
+                                    requiredLevel: Number(e.target.value),
+                                  },
+                                }))
+                              }
+                              className="w-16 px-2 py-1 bg-white border border-[#141414] text-xs font-mono font-bold"
+                            />
+                          </div>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min="0"
+                              step="10"
+                              value={curCost}
+                              onChange={(e) =>
+                                setItemRowEdits((prev) => ({
+                                  ...prev,
+                                  [item._id]: {
+                                    ...prev[item._id],
+                                    goldCost: Number(e.target.value),
+                                  },
+                                }))
+                              }
+                              className="w-20 px-2 py-1 bg-white border border-[#141414] text-xs font-mono font-bold"
+                            />
+                            <span>G</span>
+                          </div>
+                        </td>
+
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            value={curZ}
+                            onChange={(e) =>
+                              setItemRowEdits((prev) => ({
+                                ...prev,
+                                [item._id]: {
+                                  ...prev[item._id],
+                                  zIndex: Number(e.target.value),
+                                },
+                              }))
+                            }
+                            className="w-14 px-2 py-1 bg-white border border-[#141414] text-xs font-mono font-bold"
+                          />
+                        </td>
+
+                        <td className="p-3 text-right space-x-2">
+                          {hasChanges && (
+                            <button
+                              onClick={() => {
+                                updateItemMutation.mutate({
+                                  id: item._id,
+                                  data: {
+                                    name: curName,
+                                    requiredLevel: curLevel,
+                                    goldCost: curCost,
+                                    zIndex: curZ,
+                                  },
+                                });
+                                setItemRowEdits((prev) => {
+                                  const next = { ...prev };
+                                  delete next[item._id];
+                                  return next;
+                                });
+                              }}
+                              disabled={updateItemMutation.isPending}
+                              className="px-2.5 py-1 bg-[#2B4AE8] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
+                            >
+                              SAVE
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Decommission asset "${item.name}" and delete its sprite file from disk?`)) {
+                                deleteItemMutation.mutate(item._id);
+                              }
+                            }}
+                            disabled={deleteItemMutation.isPending}
+                            className="px-2.5 py-1 bg-[#E8402C] text-white border border-[#141414] text-[10px] font-black uppercase cursor-pointer hover:bg-[#141414]"
+                          >
+                            DELETE
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -768,27 +957,6 @@ export const AdminPage = () => {
                 EXECUTE +{goldBonusAmount} GOLD GRANT →
               </button>
             </div>
-          </div>
-
-          <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal space-y-4">
-            <div className="text-xs font-mono font-bold text-[#2B4AE8]">// CATALOG RESET</div>
-            <h2 className="text-2xl font-black font-space text-[#141414] uppercase">
-              RE-SEED DEFAULT SHOP INVENTORY
-            </h2>
-            <p className="text-xs font-mono text-[#141414]/70">
-              Restores all 21 original plants, desk lamps, and poster items to The Vault.
-            </p>
-            <button
-              onClick={() => {
-                if (window.confirm('Reset catalog to 21 factory default items?')) {
-                  reseedShopMutation.mutate();
-                }
-              }}
-              disabled={reseedShopMutation.isPending}
-              className="px-6 py-3 bg-[#2B4AE8] text-white border-2 border-[#141414] font-mono text-xs font-black uppercase cursor-pointer"
-            >
-              TRIGGER FACTORY RE-SEED →
-            </button>
           </div>
         </div>
       )}
@@ -862,150 +1030,7 @@ export const AdminPage = () => {
           </form>
         </Modal>
       )}
-
-      {/* -------------------------------------------------------------
-          MODAL: ADD NEW VAULT ASSET
-         ------------------------------------------------------------- */}
-      {isAddItemOpen && (
-        <Modal
-          isOpen={isAddItemOpen}
-          onClose={() => setIsAddItemOpen(false)}
-          title="CATALOG NEW VAULT ASSET"
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              createItemMutation.mutate(newItem);
-            }}
-            className="space-y-4 font-mono"
-          >
-            <Input
-              label="ASSET NAME"
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-              placeholder="e.g. MONOCHROME DESK LAMP"
-              required
-            />
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-black uppercase text-[#141414]">CATEGORY</label>
-              <select
-                value={newItem.category}
-                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                className="w-full px-4 py-2.5 bg-[#F5F3EF] border-2 border-[#141414] text-xs font-mono font-bold uppercase"
-              >
-                <option value="plant">BIO-SPECIMENS (PLANT)</option>
-                <option value="lamp">LIGHTING ARRAY (LAMP)</option>
-                <option value="poster">SCHEMATIC PRINT (POSTER)</option>
-                <option value="rug">DECK FLOORING (RUG)</option>
-                <option value="mug">RATION MUG (MUG)</option>
-                <option value="wallpaper">BULKHEAD WALLPAPER (WALLPAPER)</option>
-              </select>
-            </div>
-            <Input
-              label="GOLD COST"
-              type="number"
-              value={newItem.cost}
-              onChange={(e) => setNewItem({ ...newItem, cost: Number(e.target.value) })}
-              required
-            />
-            <Input
-              label="REQUIRED UNLOCK LEVEL"
-              type="number"
-              value={newItem.unlockLevel}
-              onChange={(e) => setNewItem({ ...newItem, unlockLevel: Number(e.target.value) })}
-              required
-            />
-            <Input
-              label="IMAGE KEY / ASSET IDENTIFIER"
-              value={newItem.imageKey}
-              onChange={(e) => setNewItem({ ...newItem, imageKey: e.target.value })}
-              placeholder="e.g. plant_bonsai"
-              required
-            />
-            <Textarea
-              label="SPECIFICATION DESCRIPTION"
-              value={newItem.description}
-              onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-              rows={2}
-              required
-            />
-
-            <div className="pt-4 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setIsAddItemOpen(false)}>
-                CANCEL
-              </Button>
-              <Button type="submit" variant="primary">
-                COMMIT ASSET TO VAULT
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* -------------------------------------------------------------
-          MODAL: REVISE VAULT ASSET
-         ------------------------------------------------------------- */}
-      {editingItem && (
-        <Modal
-          isOpen={!!editingItem}
-          onClose={() => setEditingItem(null)}
-          title={`REVISE ASSET: ${editingItem.name}`}
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              updateItemMutation.mutate({
-                id: editingItem._id,
-                data: {
-                  name: formData.get('name'),
-                  cost: Number(formData.get('cost')),
-                  unlockLevel: Number(formData.get('unlockLevel')),
-                  description: formData.get('description'),
-                },
-              });
-            }}
-            className="space-y-4 font-mono"
-          >
-            <Input
-              label="ASSET NAME"
-              name="name"
-              defaultValue={editingItem.name}
-              required
-            />
-            <Input
-              label="GOLD COST"
-              name="cost"
-              type="number"
-              defaultValue={editingItem.cost}
-              required
-            />
-            <Input
-              label="UNLOCK LEVEL"
-              name="unlockLevel"
-              type="number"
-              defaultValue={editingItem.unlockLevel}
-              required
-            />
-            <Textarea
-              label="DESCRIPTION"
-              name="description"
-              defaultValue={editingItem.description}
-              rows={2}
-              required
-            />
-
-            <div className="pt-4 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>
-                CANCEL
-              </Button>
-              <Button type="submit" variant="primary">
-                UPDATE ASSET
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
     </div>
   );
 };
+
