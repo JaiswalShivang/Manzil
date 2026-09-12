@@ -12,6 +12,10 @@ const inventoryItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  purchasedAt: {
+    type: Date,
+    default: Date.now,
+  },
   acquiredAt: {
     type: Date,
     default: Date.now,
@@ -87,12 +91,7 @@ const userSchema = new mongoose.Schema(
       weapon: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
       aura: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', default: null },
     },
-    inventory: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Item',
-      },
-    ],
+    inventory: [inventoryItemSchema],
     refreshTokenHash: {
       type: String,
       default: null,

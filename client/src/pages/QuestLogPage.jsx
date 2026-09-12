@@ -18,6 +18,7 @@ export const QuestLogPage = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingQuest, setEditingQuest] = useState(null);
   const [levelUpData, setLevelUpData] = useState({ isOpen: false, newLevel: 1 });
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -56,9 +57,41 @@ export const QuestLogPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quests'] });
       setIsModalOpen(false);
+      setEditingQuest(null);
     },
     onError: (err) => {
       setErrorMessage(err.response?.data?.message || 'Failed to create quest');
+    },
+  });
+
+  // Update Quest Mutation (Optimistic)
+  const updateQuestMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await api.patch(`/quests/${id}`, data);
+      return res.data;
+    },
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['quests'] });
+      const previous = queryClient.getQueryData(['quests', statusFilter, categoryFilter]);
+      queryClient.setQueryData(['quests', statusFilter, categoryFilter], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          quests: (old.quests || []).map((q) => (q._id === id ? { ...q, ...data } : q)),
+        };
+      });
+      return { previous };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quests'] });
+      setIsModalOpen(false);
+      setEditingQuest(null);
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['quests', statusFilter, categoryFilter], context.previous);
+      }
+      setErrorMessage(err.response?.data?.message || 'Failed to update quest');
     },
   });
 
@@ -104,14 +137,32 @@ export const QuestLogPage = () => {
     },
   });
 
-  // Delete Quest Mutation
+  // Delete Quest Mutation (Optimistic)
   const deleteQuestMutation = useMutation({
     mutationFn: async (questId) => {
       const res = await api.delete(`/quests/${questId}`);
       return res.data;
     },
+    onMutate: async (questId) => {
+      await queryClient.cancelQueries({ queryKey: ['quests'] });
+      const previous = queryClient.getQueryData(['quests', statusFilter, categoryFilter]);
+      queryClient.setQueryData(['quests', statusFilter, categoryFilter], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          quests: (old.quests || []).filter((q) => q._id !== questId),
+        };
+      });
+      return { previous };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quests'] });
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['quests', statusFilter, categoryFilter], context.previous);
+      }
+      setErrorMessage(err.response?.data?.message || 'Could not delete quest');
     },
   });
 
@@ -206,6 +257,10 @@ export const QuestLogPage = () => {
               key={quest._id}
               quest={quest}
               onComplete={(q) => completeQuestMutation.mutate(q)}
+              onEdit={(q) => {
+                setEditingQuest(q);
+                setIsModalOpen(true);
+              }}
               onDelete={(id) => deleteQuestMutation.mutate(id)}
               isCompleting={completeQuestMutation.isPending}
             />
@@ -213,11 +268,32 @@ export const QuestLogPage = () => {
         </div>
       )}
 
+      {/* Integrity Model Protocol Note */}
+      <div className="bg-[#FAF3E8] border-2 border-[#141414] p-4 shadow-brutal-sm font-mono text-xs">
+        <div className="text-[10px] font-black text-[#2B4AE8] mb-1 uppercase tracking-wider">
+          // INTEGRITY MODEL
+        </div>
+        <p className="text-[#141414]/80 leading-relaxed font-bold uppercase text-[11px]">
+          Task completion is self-declared by the operative. All XP, Gold, and skill rewards are calculated and validated server-side from stored directive data — client-submitted values are never trusted, and duplicate completions are rejected atomically. No manual review layer exists by design; verification targets technical exploitation, not real-world task honesty.
+        </p>
+      </div>
+
+      {/* Quest Create / Edit Modal */}
       <QuestFormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={(newQuest) => createQuestMutation.mutate(newQuest)}
-        isSubmitting={createQuestMutation.isPending}
+        initialData={editingQuest}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingQuest(null);
+        }}
+        onSubmit={(formData, id) => {
+          if (id) {
+            updateQuestMutation.mutate({ id, data: formData });
+          } else {
+            createQuestMutation.mutate(formData);
+          }
+        }}
+        isSubmitting={createQuestMutation.isPending || updateQuestMutation.isPending}
       />
 
       <LevelUpModal

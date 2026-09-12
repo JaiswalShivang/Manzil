@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '../api/client';
 import { ShopItemCard } from '../components/shop/ShopItemCard';
 import { Avatar } from '../components/avatar/Avatar';
-import { Skeleton } from '../components/ui/Skeleton';
+import { ShopItemCardSkeleton } from '../components/ui/Skeleton';
 import { Coins, Sparkles, Scissors, Shirt, Footprints, Sword } from 'lucide-react';
 import { PantsIcon } from '../components/ui/PantsIcon';
 
@@ -288,12 +288,7 @@ export const ShopPage = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-[#FAF3E8] border-3 border-[#141414] p-5 shadow-brutal space-y-4">
-              <Skeleton width="w-24" height="h-4" />
-              <Skeleton width="w-full" height="h-32" />
-              <Skeleton width="w-3/4" height="h-5" />
-              <Skeleton width="w-full" height="h-4" />
-            </div>
+            <ShopItemCardSkeleton key={i} />
           ))}
         </div>
       ) : shopItems.length === 0 ? (

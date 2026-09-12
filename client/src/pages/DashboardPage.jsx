@@ -23,6 +23,7 @@ export const DashboardPage = () => {
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingQuest, setEditingQuest] = useState(null);
   const [levelUpData, setLevelUpData] = useState({ isOpen: false, newLevel: 1 });
   const [actionError, setActionError] = useState(null);
 
@@ -46,9 +47,41 @@ export const DashboardPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quests'] });
       setIsModalOpen(false);
+      setEditingQuest(null);
     },
     onError: (err) => {
       setActionError(err.response?.data?.message || 'Could not save quest');
+    },
+  });
+
+  // Update Quest Mutation (Optimistic)
+  const updateQuestMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await api.patch(`/quests/${id}`, data);
+      return res.data;
+    },
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['quests'] });
+      const previousQuests = queryClient.getQueryData(['quests', 'pending']);
+      queryClient.setQueryData(['quests', 'pending'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          quests: (old.quests || []).map((q) => (q._id === id ? { ...q, ...data } : q)),
+        };
+      });
+      return { previousQuests };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quests'] });
+      setIsModalOpen(false);
+      setEditingQuest(null);
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousQuests) {
+        queryClient.setQueryData(['quests', 'pending'], context.previousQuests);
+      }
+      setActionError(err.response?.data?.message || 'Failed to update quest');
     },
   });
 
@@ -92,14 +125,32 @@ export const DashboardPage = () => {
     },
   });
 
-  // Delete Quest Mutation
+  // Delete Quest Mutation (Optimistic)
   const deleteQuestMutation = useMutation({
     mutationFn: async (questId) => {
       const res = await api.delete(`/quests/${questId}`);
       return res.data;
     },
+    onMutate: async (questId) => {
+      await queryClient.cancelQueries({ queryKey: ['quests'] });
+      const previousQuests = queryClient.getQueryData(['quests', 'pending']);
+      queryClient.setQueryData(['quests', 'pending'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          quests: (old.quests || []).filter((q) => q._id !== questId),
+        };
+      });
+      return { previousQuests };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quests'] });
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousQuests) {
+        queryClient.setQueryData(['quests', 'pending'], context.previousQuests);
+      }
+      setActionError(err.response?.data?.message || 'Could not delete quest');
     },
   });
 
@@ -250,6 +301,10 @@ export const DashboardPage = () => {
                 key={quest._id}
                 quest={quest}
                 onComplete={(q) => completeQuestMutation.mutate(q)}
+                onEdit={(q) => {
+                  setEditingQuest(q);
+                  setIsModalOpen(true);
+                }}
                 onDelete={(id) => deleteQuestMutation.mutate(id)}
                 isCompleting={completeQuestMutation.isPending}
               />
@@ -258,12 +313,22 @@ export const DashboardPage = () => {
         )}
       </div>
 
-      {/* New Quest Modal */}
+      {/* Quest Create / Edit Modal */}
       <QuestFormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={(newQuest) => createQuestMutation.mutate(newQuest)}
-        isSubmitting={createQuestMutation.isPending}
+        initialData={editingQuest}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingQuest(null);
+        }}
+        onSubmit={(formData, id) => {
+          if (id) {
+            updateQuestMutation.mutate({ id, data: formData });
+          } else {
+            createQuestMutation.mutate(formData);
+          }
+        }}
+        isSubmitting={createQuestMutation.isPending || updateQuestMutation.isPending}
       />
 
       {/* Level Up Celebration Modal */}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Avatar } from './Avatar';
+import { AvatarViewportSkeleton } from '../ui/Skeleton';
 import {
   Sparkles,
   Zap,
@@ -30,7 +31,10 @@ const slotColors = {
   aura: '#E8402C',
 };
 
-export const CharacterViewport = ({ user, onUnequip, isUnequipping = false }) => {
+export const CharacterViewport = ({ user, onUnequip, isUnequipping = false, isLoading = false }) => {
+  if (isLoading || !user) {
+    return <AvatarViewportSkeleton />;
+  }
   const equipped = user?.equipped || {};
 
   const slots = [
@@ -152,6 +156,7 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false }) =>
                       }}
                       disabled={isUnequipping}
                       title={`Unequip ${label}`}
+                      aria-label={`Unequip ${label}: ${item?.name || 'equipped item'}`}
                       className="px-2.5 py-1 bg-[#FAF3E8] hover:bg-[#E8402C] hover:text-white text-[#141414] border-2 border-[#141414] font-mono text-[11px] font-black uppercase cursor-pointer transition-none shadow-brutal-sm flex items-center gap-1 shrink-0"
                     >
                       <X className="w-3.5 h-3.5 stroke-[3]" />

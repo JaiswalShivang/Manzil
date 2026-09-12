@@ -31,8 +31,16 @@ export const Avatar = ({ equipped = {}, scale = 4, className = '' }) => {
   // Dimension scaling calculation: native 64x64 scaled up
   const containerSize = 64 * scale;
 
+  const equippedNames = Object.entries(equipped || {})
+    .filter(([, val]) => Boolean(val))
+    .map(([slot, item]) => `${slot}: ${typeof item === 'object' && item?.name ? item.name : 'equipped'}`)
+    .join(', ');
+  const avatarAriaLabel = equippedNames ? `Operative avatar with ${equippedNames}` : 'Operative paperdoll avatar';
+
   return (
     <div
+      role="img"
+      aria-label={avatarAriaLabel}
       className={`relative flex items-center justify-center overflow-hidden select-none ${className}`}
       style={{
         width: `${containerSize}px`,

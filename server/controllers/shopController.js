@@ -76,7 +76,12 @@ export const purchaseItem = async (req, res, next) => {
     const targetSlot = item.itemType === 'crystal' ? 'aura' : item.itemType;
     const updateOps = {
       $inc: { cozyCoins: -item.goldCost },
-      $push: { inventory: item._id },
+      $push: {
+        inventory: {
+          itemId: item._id,
+          purchasedAt: new Date(),
+        },
+      },
     };
     if (['hair', 'chest', 'pants', 'shoes', 'weapon', 'aura'].includes(targetSlot)) {
       updateOps.$set = { [`equipped.${targetSlot}`]: item._id };

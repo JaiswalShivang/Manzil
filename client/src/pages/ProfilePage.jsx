@@ -1,8 +1,9 @@
 import { useAuth } from '../context/AuthContext';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
 import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/avatar/Avatar';
+import { Skeleton, ProfileSkillBarSkeleton, ProfileInventorySkeleton } from '../components/ui/Skeleton';
 import {
   BookOpen,
   Heart,
@@ -13,9 +14,32 @@ import {
   LogOut,
 } from 'lucide-react';
 
+const formatRelativeTime = (date) => {
+  if (!date || isNaN(date.getTime())) return 'RECORDED';
+  const now = new Date();
+  const diffInSeconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
+  if (diffInSeconds < 60) return 'JUST NOW';
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) return `${diffInDays}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 export const ProfilePage = () => {
-  const { user, updateUserData, logout } = useAuth();
+  const { user, isLoading, updateUserData, logout } = useAuth();
   const queryClient = useQueryClient();
+
+  // Fetch completed quests for Activity Ledger
+  const { data: completedQuestsData, isLoading: isQuestsLoading } = useQuery({
+    queryKey: ['quests', 'completed'],
+    queryFn: async () => {
+      const res = await api.get('/quests?status=completed');
+      return res.data;
+    },
+  });
 
   // Equip Mutation via /api/equip
   const equipMutation = useMutation({
@@ -94,6 +118,37 @@ export const ProfilePage = () => {
   ];
 
   const inventory = user?.inventory || [];
+  const completedQuests = completedQuestsData?.quests || [];
+
+  const completedQuestsList = completedQuests.map((q) => ({
+    id: `quest-${q._id}`,
+    type: 'quest',
+    title: q.title,
+    category: q.category,
+    timestamp: new Date(q.completedAt || q.updatedAt || q.createdAt),
+    reward: `+${q.xpReward} XP / +${q.coinReward} G`,
+    cost: null,
+  }));
+
+  const inventoryPurchasesList = inventory
+    .map((inv) => {
+      const item = inv?.itemId || inv;
+      if (!item || !item.name) return null;
+      return {
+        id: `purchase-${item._id}-${inv?.purchasedAt || inv?.acquiredAt || 'init'}`,
+        type: 'purchase',
+        title: item.name,
+        category: item.itemType === 'crystal' ? 'aura' : item.itemType || 'gear',
+        timestamp: new Date(inv?.purchasedAt || inv?.acquiredAt || user?.createdAt || 0),
+        reward: null,
+        cost: `-${item.goldCost || item.cost || 0} G`,
+      };
+    })
+    .filter(Boolean);
+
+  const mergedLedger = [...completedQuestsList, ...inventoryPurchasesList]
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, 30);
 
   // Generate streak calendar matrix (last 28 days)
   const streakDays = Array.from({ length: 28 }, (_, i) => {
@@ -103,6 +158,51 @@ export const ProfilePage = () => {
     const isToday = i === 27;
     return { day: i + 1, isCompleted, isToday };
   });
+
+  if (isLoading || !user) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-start sm:items-center gap-6">
+            <div className="w-24 h-24 bg-[#2B4AE8] border-3 border-[#141414] shimmer-bauhaus shrink-0" />
+            <div className="space-y-2">
+              <Skeleton width="w-28" height="h-4" />
+              <Skeleton width="w-48" height="h-8" />
+              <div className="flex gap-3 pt-2">
+                <Skeleton width="w-32" height="h-6" />
+                <Skeleton width="w-28" height="h-6" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-baseline justify-between mb-4 border-b-3 border-[#141414] pb-2">
+            <div>
+              <Skeleton width="w-24" height="h-3" className="mb-1" />
+              <Skeleton width="w-48" height="h-6" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <ProfileSkillBarSkeleton />
+            <ProfileSkillBarSkeleton />
+            <ProfileSkillBarSkeleton />
+            <ProfileSkillBarSkeleton />
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-baseline justify-between mb-4 border-b-3 border-[#141414] pb-2">
+            <div>
+              <Skeleton width="w-24" height="h-3" className="mb-1" />
+              <Skeleton width="w-48" height="h-6" />
+            </div>
+          </div>
+          <ProfileInventorySkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
@@ -254,6 +354,22 @@ export const ProfilePage = () => {
         </p>
       </div>
 
+      {/* Integrity Model Protocol Panel */}
+      <div className="bg-[#141414] text-[#F5F3EF] border-3 border-[#141414] p-6 shadow-brutal font-mono">
+        <div className="flex items-center gap-2 text-xs font-black text-[#F2B705] mb-2 uppercase tracking-wider">
+          <Shield className="w-4 h-4 text-[#F2B705]" />
+          <span>// INTEGRITY MODEL // SECURITY SPECIFICATION</span>
+        </div>
+        <p className="text-xs sm:text-sm font-bold leading-relaxed text-[#F5F3EF]/90 max-w-4xl uppercase">
+          Task completion is self-declared by the operative. All XP, Gold, and skill rewards are calculated and validated server-side from stored directive data — client-submitted values are never trusted, and duplicate completions are rejected atomically. No manual review layer exists by design; verification targets technical exploitation, not real-world task honesty.
+        </p>
+        <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-white/20 text-[10px] font-bold text-white/60 uppercase">
+          <span>• ATOMIC STATUS TRANSITION</span>
+          <span>• STRICT SERVER REWARD DERIVATION</span>
+          <span>• ANTI-DOUBLE EXECUTION LOCK</span>
+        </div>
+      </div>
+
       {/* Tactical Asset Inventory */}
       <div>
         <div className="flex items-baseline justify-between mb-4 border-b-3 border-[#141414] pb-2">
@@ -354,6 +470,79 @@ export const ProfilePage = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Read-Only Activity Ledger Timeline */}
+      <div>
+        <div className="flex items-baseline justify-between mb-4 border-b-3 border-[#141414] pb-2">
+          <div>
+            <span className="text-xs font-mono font-bold text-[#2B4AE8] block">// TELEMETRY & TRANSACTION AUDIT</span>
+            <h2 className="text-2xl font-black font-space text-[#141414] uppercase">
+              ACTIVITY LEDGER
+            </h2>
+          </div>
+          <span className="text-xs font-mono font-bold text-[#141414]/60">
+            {mergedLedger.length} RECENT AUDIT RECORDS
+          </span>
+        </div>
+
+        {isQuestsLoading ? (
+          <div className="space-y-3">
+            <Skeleton width="w-full" height="h-16" />
+            <Skeleton width="w-full" height="h-16" />
+            <Skeleton width="w-full" height="h-16" />
+          </div>
+        ) : mergedLedger.length === 0 ? (
+          <div className="bg-[#FAF3E8] border-3 border-[#141414] p-10 text-center shadow-brutal font-mono">
+            <div className="text-xs font-bold text-[#141414]/50 uppercase mb-1">// ZERO TELEMETRY LOGGED</div>
+            <p className="text-xs text-[#141414]/70 uppercase">
+              Execute active directives or requisition equipment from The Vault to generate chronological ledger entries.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {mergedLedger.map((entry) => (
+              <div
+                key={entry.id}
+                className="bg-[#FAF3E8] border-2 border-[#141414] p-3.5 shadow-brutal-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono transition-none"
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  {entry.type === 'quest' ? (
+                    <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-[#2B4AE8] text-white border border-[#141414] shrink-0">
+                      DIRECTIVE
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-[#F2B705] text-[#141414] border border-[#141414] shrink-0">
+                      VAULT
+                    </span>
+                  )}
+                  <div className="truncate">
+                    <div className="text-xs sm:text-sm font-black font-space uppercase text-[#141414] truncate">
+                      {entry.title}
+                    </div>
+                    <div className="text-[10px] font-bold text-[#141414]/60 uppercase flex items-center gap-2 mt-0.5">
+                      <span>VECTOR: [{entry.category}]</span>
+                      <span>•</span>
+                      <span>{formatRelativeTime(entry.timestamp)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="shrink-0 flex items-center justify-end">
+                  {entry.reward ? (
+                    <span className="px-2.5 py-1 text-xs font-black uppercase bg-white text-[#2B4AE8] border-2 border-[#141414] shadow-brutal-sm">
+                      {entry.reward}
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 text-xs font-black uppercase bg-white text-[#E8402C] border-2 border-[#141414] shadow-brutal-sm">
+                      {entry.cost}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

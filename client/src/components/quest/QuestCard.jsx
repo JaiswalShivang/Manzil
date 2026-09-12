@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import { CategoryBadge } from '../ui/Badge';
-import { Check, Trash2, Calendar, Repeat } from 'lucide-react';
+import { Check, Trash2, Calendar, Repeat, Edit3 } from 'lucide-react';
 
-export const QuestCard = ({ quest, onComplete, onDelete, isCompleting = false }) => {
+export const QuestCard = ({
+  quest,
+  onComplete,
+  onEdit,
+  onDelete,
+  isCompleting = false,
+}) => {
   const isCompleted = quest.status === 'completed';
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const categoryColors = {
     intellect: 'bg-[#2B4AE8]',
@@ -22,10 +30,10 @@ export const QuestCard = ({ quest, onComplete, onDelete, isCompleting = false })
 
   return (
     <div
-      className={`relative border-2 border-[#141414] p-5 transition-all duration-150 flex flex-col justify-between ${
+      className={`relative border-2 border-[#141414] p-5 transition-all duration-150 flex flex-col justify-between card-hover-brutal ${
         isCompleted
           ? 'bg-[#EBE7DF] opacity-75 shadow-none'
-          : 'bg-white shadow-brutal hover:shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5'
+          : 'bg-white shadow-brutal hover:bg-white'
       }`}
     >
       {/* Corner Tag Block */}
@@ -81,19 +89,62 @@ export const QuestCard = ({ quest, onComplete, onDelete, isCompleting = false })
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Delete Button */}
-          <button
-            onClick={() => onDelete(quest._id)}
-            className="p-1.5 text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF] border border-[#141414] transition-colors cursor-pointer"
-            title="Purge Quest"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex items-center gap-1.5">
+          {/* Edit Action (Pending Quests Only) */}
+          {!isCompleted && onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(quest)}
+              className="p-1.5 text-[#141414] hover:bg-[#2B4AE8] hover:text-[#F5F3EF] border border-[#141414] transition-colors cursor-pointer shadow-brutal-sm"
+              title="Edit Directive"
+              aria-label="Edit Directive"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Delete Action with Inline Confirmation (No browser confirm popup) */}
+          {onDelete && (
+            isConfirmingDelete ? (
+              <div className="flex items-center gap-1 bg-[#FAF3E8] border border-[#141414] p-1 shadow-brutal-sm">
+                <span className="text-[10px] font-heading font-black text-[#E8402C] px-1">PURGE?</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsConfirmingDelete(false);
+                    onDelete(quest._id);
+                  }}
+                  className="px-2 py-0.5 bg-[#E8402C] text-white text-[10px] font-heading font-black border border-[#141414] hover:bg-[#141414] cursor-pointer"
+                  title="Confirm Delete"
+                >
+                  YES
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmingDelete(false)}
+                  className="px-2 py-0.5 bg-white text-[#141414] text-[10px] font-heading font-black border border-[#141414] hover:bg-[#EBE7DF] cursor-pointer"
+                  title="Cancel Delete"
+                >
+                  NO
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsConfirmingDelete(true)}
+                className="p-1.5 text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF] border border-[#141414] transition-colors cursor-pointer shadow-brutal-sm"
+                title="Purge Quest"
+                aria-label="Purge Quest"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )
+          )}
 
           {/* Complete Button */}
           {!isCompleted ? (
             <button
+              type="button"
               onClick={() => onComplete(quest)}
               disabled={isCompleting}
               className="flex items-center gap-1 px-3 py-1.5 bg-[#141414] hover:bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] text-xs font-heading font-black uppercase shadow-brutal-sm hover:shadow-none transition-all cursor-pointer disabled:opacity-40"

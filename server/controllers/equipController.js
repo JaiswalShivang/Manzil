@@ -9,7 +9,7 @@ export const populateUserEquipped = async (userQuery) => {
     .populate('equipped.shoes')
     .populate('equipped.weapon')
     .populate('equipped.aura')
-    .populate('inventory');
+    .populate('inventory.itemId');
 };
 
 export const equipItem = async (req, res, next) => {

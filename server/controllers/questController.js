@@ -67,12 +67,19 @@ export const updateQuest = async (req, res, next) => {
     const { id } = req.params;
     const { title, description, category, isRecurring, dueDate } = req.body;
 
-    const quest = await Quest.findOne({ _id: id, userId: req.user._id });
+    const quest = await Quest.findById(id);
 
     if (!quest) {
       return res.status(404).json({
         success: false,
-        message: 'Quest not found or you do not have permission to modify it',
+        message: 'Quest not found',
+      });
+    }
+
+    if (quest.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You do not have permission to modify this quest',
       });
     }
 
@@ -109,23 +116,37 @@ export const updateQuest = async (req, res, next) => {
 export const completeQuest = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const quest = await Quest.findOne({ _id: id, userId: req.user._id });
+
+    // ATOMIC STATE TRANSITION:
+    // Only transitions if quest is in 'pending' status and belongs to req.user._id.
+    // Rapid duplicate requests or race conditions atomically fail on the second request.
+    const quest = await Quest.findOneAndUpdate(
+      { _id: id, userId: req.user._id, status: 'pending' },
+      { $set: { status: 'completed', completedAt: new Date() } },
+      { new: true }
+    );
 
     if (!quest) {
+      const existingQuest = await Quest.findOne({ _id: id, userId: req.user._id });
+      if (existingQuest && existingQuest.status === 'completed') {
+        return res.status(409).json({
+          success: false,
+          message: 'Directive already executed. Duplicate execution rejected.',
+        });
+      }
       return res.status(404).json({
         success: false,
         message: 'Quest not found or you do not have permission to complete it',
       });
     }
 
-    if (quest.status === 'completed') {
-      return res.status(400).json({
+    const user = await User.findById(req.user._id).populate('inventory.itemId');
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: 'This quest has already been completed!',
+        message: 'User account not found',
       });
     }
-
-    const user = await User.findById(req.user._id).populate('inventory.itemId');
 
     const streakResult = updateStreak(user.streak);
     user.streak = {
@@ -133,6 +154,7 @@ export const completeQuest = async (req, res, next) => {
       lastCompletedDate: streakResult.lastCompletedDate,
     };
 
+    // Rewards are read strictly from stored database document — never from client payload
     let totalXpEarned = quest.xpReward;
     let totalCoinsEarned = quest.coinReward;
 
@@ -154,9 +176,6 @@ export const completeQuest = async (req, res, next) => {
     user.cozyCoins = progressionResult.cozyCoins;
     user.skills = progressionResult.skills;
 
-    quest.status = 'completed';
-    quest.completedAt = new Date();
-
     let nextRecurringQuest = null;
     if (quest.isRecurring) {
       const tomorrow = new Date();
@@ -176,7 +195,7 @@ export const completeQuest = async (req, res, next) => {
       await nextRecurringQuest.save();
     }
 
-    await Promise.all([user.save(), quest.save()]);
+    await user.save();
 
     return res.status(200).json({
       success: true,
@@ -225,14 +244,23 @@ export const deleteQuest = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const quest = await Quest.findOneAndDelete({ _id: id, userId: req.user._id });
+    const quest = await Quest.findById(id);
 
     if (!quest) {
       return res.status(404).json({
         success: false,
-        message: 'Quest not found or you do not have permission to delete it',
+        message: 'Quest not found',
       });
     }
+
+    if (quest.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You do not have permission to delete this quest',
+      });
+    }
+
+    await Quest.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,

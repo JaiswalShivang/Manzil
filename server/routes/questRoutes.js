@@ -8,6 +8,7 @@ import {
 } from '../controllers/questController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { validate, createQuestSchema, updateQuestSchema } from '../middleware/validate.js';
+import { questCompleteLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -22,6 +23,6 @@ router.route('/:id')
   .patch(validate(updateQuestSchema), updateQuest)
   .delete(deleteQuest);
 
-router.post('/:id/complete', completeQuest);
+router.post('/:id/complete', questCompleteLimiter, completeQuest);
 
 export default router;

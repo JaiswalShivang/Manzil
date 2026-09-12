@@ -114,10 +114,31 @@ button:active:not(:disabled), .btn-interactive:active:not(:disabled) {
   background: #E8402C;
 }
 
-/* Focus outline */
+/* Accessible High-Contrast Focus outline */
 *:focus-visible {
-  outline: 3px solid #E8402C !important;
+  outline: 2px solid #2B4AE8 !important;
   outline-offset: 2px;
+}
+
+/* Bauhaus Shimmer Sweep for Loading Skeletons */
+@keyframes bauhausShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-bauhaus {
+  background: linear-gradient(
+    90deg,
+    rgba(20, 20, 20, 0.04) 0%,
+    rgba(20, 20, 20, 0.12) 50%,
+    rgba(20, 20, 20, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: bauhausShimmer 1.8s infinite linear;
 }
 
 /* Pixel-snapped Paperdoll Sprite Animation */
@@ -139,4 +160,20 @@ button:active:not(:disabled), .btn-interactive:active:not(:disabled) {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+}
+
+/* Reduced Motion Preference Compliance */
+@media (prefers-reduced-motion: reduce) {
+  .sprite-layer {
+    animation: none !important;
+  }
+  .shimmer-bauhaus {
+    animation: none !important;
+  }
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
