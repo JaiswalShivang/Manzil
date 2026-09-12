@@ -3,7 +3,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import AdmZip from 'adm-zip';
-import sharp from 'sharp';
 import multer from 'multer';
 import User from '../models/User.js';
 import Quest from '../models/Quest.js';
@@ -12,10 +11,27 @@ import Item from '../models/Item.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure multer storage for admin zip uploads
-const tempDir = path.resolve(__dirname, '../temp');
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir, { recursive: true });
+// Lazy-load sharp to prevent serverless function crash on platforms without native bindings
+let sharpModule = null;
+const getSharp = async () => {
+  if (!sharpModule) {
+    try {
+      sharpModule = (await import('sharp')).default;
+    } catch (err) {
+      console.warn('sharp native module could not be loaded:', err.message);
+    }
+  }
+  return sharpModule;
+};
+
+// Configure multer storage (use /tmp in serverless/Vercel environments to avoid read-only filesystem crash)
+const tempDir = process.env.VERCEL ? '/tmp' : path.resolve(__dirname, '../temp');
+try {
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+} catch (dirErr) {
+  console.warn('Temp directory creation warning:', dirErr.message);
 }
 
 const storage = multer.diskStorage({
@@ -82,6 +98,9 @@ export const inferItemMetadata = (rawName) => {
 // Helper to strip underlying character body pixels from equipment sprite sheets
 const stripBodyPixels = async (spriteBuffer, baseRaw) => {
   if (!baseRaw) return spriteBuffer;
+  const sharp = await getSharp();
+  if (!sharp) return spriteBuffer;
+
   const { data: itemData } = await sharp(spriteBuffer)
     .ensureAlpha()
     .raw()

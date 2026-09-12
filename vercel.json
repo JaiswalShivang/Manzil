@@ -19,20 +19,7 @@
       "dest": "server/index.js"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "client/assets/$1"
-    },
-    {
-      "src": "/favicon.svg",
-      "dest": "client/favicon.svg"
-    },
-    {
-      "src": "/robots.txt",
-      "dest": "client/robots.txt"
-    },
-    {
-      "src": "/sitemap.xml",
-      "dest": "client/sitemap.xml"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
