@@ -237,7 +237,7 @@ export const QuestLogPage = () => {
           <p className="text-xs font-sans text-[#141414]/70 max-w-sm mt-1 mb-6">
             {searchQuery || categoryFilter || statusFilter
               ? 'No quests match your active filter parameters. Adjust search string or filter vectors.'
-              : 'Your active queue is clear. Log a new task to resume XP accumulation.'}
+              : 'Your active queue is clear. Log a new directive to resume XP accumulation.'}
           </p>
           <Button
             onClick={() => setIsModalOpen(true)}

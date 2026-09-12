@@ -83,7 +83,7 @@ const QuestFormContent = ({ initialData, onSubmit, onClose, isSubmitting }) => {
 
       <Textarea
         label="Execution Notes (Optional)"
-        placeholder="Sub-tasks, command references, requirements..."
+        placeholder="Sub-directives, command references, requirements..."
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={2}
