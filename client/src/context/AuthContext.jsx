@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import api, { setAccessToken } from '../api/client';
 
 const AuthContext = createContext(null);
@@ -9,26 +9,33 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Initialize session on page refresh via silent refresh
-  const initializeAuth = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const res = await api.post('/auth/refresh');
-      if (res.data?.success && res.data.accessToken) {
-        setAccessToken(res.data.accessToken);
-        setUser(res.data.user);
-      }
-    } catch (err) {
-      // Not authenticated, user is guest
-      setAccessToken(null);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+    let isMounted = true;
+    const checkAuth = async () => {
+      try {
+        const res = await api.post('/auth/refresh');
+        if (isMounted && res.data?.success && res.data.accessToken) {
+          setAccessToken(res.data.accessToken);
+          setUser(res.data.user);
+        }
+      } catch {
+        if (isMounted) {
+          setAccessToken(null);
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Login handler
   const login = async (email, password) => {
@@ -114,6 +121,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

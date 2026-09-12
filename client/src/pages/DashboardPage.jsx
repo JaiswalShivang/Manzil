@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,7 +7,6 @@ import { StudyRoomScene } from '../components/room/StudyRoomScene';
 import { QuestCard } from '../components/quest/QuestCard';
 import { QuestFormModal } from '../components/quest/QuestFormModal';
 import { LevelUpModal } from '../components/levelup/LevelUpModal';
-import { triggerCozyCelebration } from '../components/levelup/CelebrationBurst';
 import { Button } from '../components/ui/Button';
 import { QuestCardSkeleton } from '../components/ui/Skeleton';
 import {
@@ -16,9 +15,8 @@ import {
   Coins,
   Plus,
   ArrowRight,
-  BookOpen,
-  Award,
   ScrollText,
+  Terminal,
 } from 'lucide-react';
 
 export const DashboardPage = () => {
@@ -29,7 +27,7 @@ export const DashboardPage = () => {
   const [levelUpData, setLevelUpData] = useState({ isOpen: false, newLevel: 1 });
   const [actionError, setActionError] = useState(null);
 
-  // Fetch pending quests for the study desk quick-view
+  // Fetch pending quests
   const { data: questsData, isLoading: questsLoading } = useQuery({
     queryKey: ['quests', 'pending'],
     queryFn: async () => {
@@ -46,7 +44,7 @@ export const DashboardPage = () => {
       const res = await api.post('/quests', newQuest);
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quests'] });
       setIsModalOpen(false);
     },
@@ -55,7 +53,7 @@ export const DashboardPage = () => {
     },
   });
 
-  // Complete Quest Mutation (with optimistic UI and rollback)
+  // Complete Quest Mutation (Optimistic)
   const completeQuestMutation = useMutation({
     mutationFn: async (quest) => {
       const res = await api.post(`/quests/${quest._id}/complete`);
@@ -65,7 +63,6 @@ export const DashboardPage = () => {
       await queryClient.cancelQueries({ queryKey: ['quests'] });
       const previousQuests = queryClient.getQueryData(['quests', 'pending']);
 
-      // Optimistically remove completed quest from pending list
       queryClient.setQueryData(['quests', 'pending'], (old) => {
         if (!old) return old;
         return {
@@ -77,22 +74,15 @@ export const DashboardPage = () => {
       return { previousQuests };
     },
     onSuccess: (data) => {
-      // Trigger celebration sparks
-      triggerCozyCelebration();
-
-      // Update auth user state with server calculated progression
       if (data.user) {
         updateUserData(data.user);
       }
-
-      // Check if leveled up!
       if (data.progression?.leveledUp) {
         setLevelUpData({
           isOpen: true,
           newLevel: data.progression.newLevel,
         });
       }
-
       queryClient.invalidateQueries({ queryKey: ['quests'] });
     },
     onError: (err, variables, context) => {
@@ -120,110 +110,104 @@ export const DashboardPage = () => {
   const xpPercentage = Math.min(100, Math.round((currentXP / xpToNext) * 100));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      {/* Top Welcome & Progression Overview Card */}
-      <div className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Top Welcome & Progression HUD Panel */}
+      <div className="bg-white border-3 border-[#141414] p-6 sm:p-8 shadow-brutal-lg">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#3A2E27] tracking-tight">
-                Good day, {user?.username || 'Scholar'} ☕
-              </h1>
-              <span className="font-handwritten text-lg text-[#E3A08A] font-semibold">
-                ready to study?
+            <div className="flex items-center gap-2 mb-1">
+              <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0.5 text-[10px] font-heading font-black">
+                OPERATIONAL
+              </span>
+              <span className="text-[11px] font-heading font-black uppercase text-[#141414]/60">
+                COMMAND DECK // HQ
               </span>
             </div>
-            <p className="text-xs text-[#78665B] mt-0.5">
-              Welcome back to your nook. Complete quests below to furnish your room!
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-heading font-black text-[#141414] tracking-tight uppercase">
+              AGENT: {user?.username || 'SCHOLAR'}
+            </h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Streak Counter Card */}
-            <div className="flex items-center gap-2 bg-[#FAF3E8] px-4 py-2 rounded-2xl border border-[#E4D3BE] shadow-xs">
-              <Flame className="w-5 h-5 text-[#E3A08A] fill-[#E3A08A]" />
-              <div>
-                <div className="text-[10px] uppercase font-bold text-[#78665B] leading-none">
-                  Streak
-                </div>
-                <div className="text-sm font-extrabold text-[#3A2E27]">
-                  {user?.streak?.count || 0} Days
-                </div>
-              </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Level Badge */}
+            <div className="bg-[#2B4AE8] text-[#F5F3EF] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+              <div className="text-[10px] font-heading font-black uppercase">CLEARANCE</div>
+              <div className="text-xl font-heading font-black">LV. {user?.level || 1}</div>
             </div>
 
-            {/* Cozy Coins Balance Card */}
-            <div className="flex items-center gap-2 bg-[#FAF3E8] px-4 py-2 rounded-2xl border border-[#E4D3BE] shadow-xs">
-              <Coins className="w-5 h-5 text-[#F4C572]" />
-              <div>
-                <div className="text-[10px] uppercase font-bold text-[#78665B] leading-none">
-                  Coins
-                </div>
-                <div className="text-sm font-extrabold text-[#855D16]">
-                  {user?.cozyCoins || 0}
-                </div>
+            {/* Streak Badge */}
+            <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+              <div className="text-[10px] font-heading font-black uppercase flex items-center gap-1">
+                <Flame className="w-3 h-3 fill-current" /> STREAK
               </div>
+              <div className="text-xl font-heading font-black">{user?.streak?.count || 0} DAYS</div>
             </div>
 
-            {/* Quick Add Quest Button */}
+            {/* Gold Badge */}
+            <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-4 py-2 shadow-brutal-sm">
+              <div className="text-[10px] font-heading font-black uppercase flex items-center gap-1">
+                <Coins className="w-3 h-3" /> GOLD
+              </div>
+              <div className="text-xl font-heading font-black">{user?.cozyCoins || 0}</div>
+            </div>
+
+            {/* Quick Add Button */}
             <Button
               onClick={() => setIsModalOpen(true)}
-              variant="primary"
+              variant="ink"
               size="md"
-              className="font-bold shadow-md"
+              className="font-black"
             >
               <Plus className="w-4 h-4" />
-              <span>New Quest</span>
+              <span>LOG QUEST</span>
             </Button>
           </div>
         </div>
 
-        {/* Focus Points (XP) Progress Bar */}
-        <div className="space-y-1.5 pt-2">
-          <div className="flex items-center justify-between text-xs font-semibold">
-            <div className="flex items-center gap-1.5 text-[#3A2E27]">
-              <Sparkles className="w-4 h-4 text-[#E3A08A]" />
-              <span>Level {user?.level || 1} Progress</span>
-            </div>
-            <span className="text-[#78665B]">
-              {currentXP} / {xpToNext} FP ({xpPercentage}%)
+        {/* Thick Hard Bordered XP Bar */}
+        <div className="space-y-1.5 pt-4 border-t-2 border-[#141414]">
+          <div className="flex items-center justify-between text-xs font-heading font-black uppercase">
+            <span className="flex items-center gap-1 text-[#141414]">
+              <Sparkles className="w-3.5 h-3.5 text-[#E8402C]" />
+              <span>EXPERIENCE PROTOCOL PROGRESS</span>
+            </span>
+            <span>
+              {currentXP} / {xpToNext} XP ({xpPercentage}%)
             </span>
           </div>
 
-          {/* Glowing XP Track */}
-          <div className="w-full h-3.5 bg-[#FAF3E8] rounded-full overflow-hidden border border-[#E4D3BE] p-0.5 relative">
+          <div className="w-full h-5 bg-[#F5F3EF] border-2 border-[#141414] p-0.5">
             <div
-              className="h-full bg-gradient-to-r from-[#F4C572] via-[#E3A08A] to-[#F4C572] rounded-full transition-all duration-500 relative"
+              className="h-full bg-[#E8402C] transition-all duration-300"
               style={{ width: `${xpPercentage}%` }}
-            >
-              {/* Glow tip at leading edge */}
-              <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/70 rounded-full blur-[1px]" />
-            </div>
+            />
           </div>
         </div>
       </div>
 
       {actionError && (
-        <div className="p-3 bg-red-100 border border-red-200 text-red-800 rounded-2xl text-xs flex items-center justify-between">
+        <div className="p-3 bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] text-xs font-heading font-bold uppercase flex items-center justify-between shadow-brutal-sm">
           <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="font-bold cursor-pointer">✕</button>
+          <button onClick={() => setActionError(null)} className="font-black cursor-pointer">✕</button>
         </div>
       )}
 
-      {/* Interactive Study Room Scene */}
+      {/* HQ Command Deck Visual Rig */}
       <div>
         <div className="flex items-center justify-between mb-3 px-1">
           <div>
-            <h2 className="text-xl font-bold text-[#3A2E27]">My Study Room</h2>
-            <p className="text-xs text-[#78665B]">
-              Furnishings unlock as you level up and purchase decorations in the shop
+            <h2 className="text-2xl font-heading font-black text-[#141414] uppercase">
+              COMMAND DECK RIG
+            </h2>
+            <p className="text-xs font-heading font-bold uppercase text-[#141414]/60">
+              PHYSICAL HARDWARE EQUIPPED VIA THE VAULT
             </p>
           </div>
           <Link
             to="/shop"
-            className="text-xs font-bold text-[#E3A08A] hover:text-[#3A2E27] flex items-center gap-1 transition-colors"
+            className="text-xs font-heading font-black text-[#E8402C] hover:text-[#141414] flex items-center gap-1 transition-colors uppercase"
           >
-            Visit Cozy Shop <ArrowRight className="w-3.5 h-3.5" />
+            ACCESS THE VAULT <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -234,18 +218,20 @@ export const DashboardPage = () => {
       <div>
         <div className="flex items-center justify-between mb-4 px-1">
           <div className="flex items-center gap-2">
-            <ScrollText className="w-5 h-5 text-[#E3A08A]" />
-            <h2 className="text-xl font-bold text-[#3A2E27]">Active Quest Board</h2>
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#E3A08A]/20 text-[#3A2E27]">
-              {pendingQuests.length} pending
+            <ScrollText className="w-5 h-5 text-[#E8402C]" />
+            <h2 className="text-2xl font-heading font-black text-[#141414] uppercase">
+              ACTIVE QUEST BOARD
+            </h2>
+            <span className="text-xs font-heading font-black px-2 py-0.5 bg-[#141414] text-[#F5F3EF]">
+              {pendingQuests.length} PENDING
             </span>
           </div>
 
           <Link
             to="/quests"
-            className="text-xs font-bold text-[#78665B] hover:text-[#3A2E27] flex items-center gap-1 transition-colors"
+            className="text-xs font-heading font-black text-[#141414]/70 hover:text-[#141414] flex items-center gap-1 transition-colors uppercase"
           >
-            View All in Quest Log <ArrowRight className="w-3.5 h-3.5" />
+            OPEN FULL LOG <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -256,19 +242,21 @@ export const DashboardPage = () => {
             <QuestCardSkeleton />
           </div>
         ) : pendingQuests.length === 0 ? (
-          <div className="bg-[#FFF9E6] border border-[#EFE2B8] rounded-3xl p-8 text-center flex flex-col items-center">
-            <span className="text-3xl mb-2">✨</span>
-            <h3 className="text-base font-bold text-[#3A2E27]">Your desk is clear for today!</h3>
-            <p className="text-xs text-[#78665B] max-w-sm mt-1 mb-4">
-              You've completed all active quests. Add a new study goal, reading target, or habit to keep your streak going!
+          <div className="bg-white border-2 border-[#141414] p-10 text-center flex flex-col items-center shadow-brutal">
+            <Terminal className="w-10 h-10 text-[#141414]/40 mb-3" />
+            <h3 className="text-base font-heading font-black uppercase text-[#141414]">
+              ALL DIRECTIVES EXECUTED
+            </h3>
+            <p className="text-xs font-sans text-[#141414]/70 max-w-sm mt-1 mb-5">
+              Your active queue is empty. Commit a new study goal or routine to maintain streak integrity.
             </p>
             <Button
               onClick={() => setIsModalOpen(true)}
               variant="primary"
               size="sm"
-              className="font-bold"
+              className="font-black"
             >
-              <Plus className="w-4 h-4" /> Add Quest ✍️
+              <Plus className="w-4 h-4" /> LOG QUEST →
             </Button>
           </div>
         ) : (

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useId } from 'react';
 
 export const Input = ({
   label,
@@ -8,14 +8,15 @@ export const Input = ({
   id,
   ...props
 }) => {
-  const inputId = id || props.name || Math.random().toString(36).substring(7);
+  const generatedId = useId();
+  const inputId = id || props.name || generatedId;
 
   return (
     <div className="w-full flex flex-col gap-1.5">
       {label && (
         <label
           htmlFor={inputId}
-          className="text-xs font-semibold uppercase tracking-wider text-[#78665B]"
+          className="text-xs font-heading font-extrabold uppercase tracking-wider text-[#141414]"
         >
           {label}
         </label>
@@ -23,12 +24,11 @@ export const Input = ({
       <input
         id={inputId}
         type={type}
-        className={`w-full px-4 py-2.5 bg-[#FAF3E8] text-[#3A2E27] placeholder-[#78665B]/60 rounded-xl border border-[#E4D3BE] focus:border-[#E3A08A] focus:ring-2 focus:ring-[#E3A08A]/30 transition-colors duration-200 outline-none text-sm ${
-          error ? 'border-red-400 focus:ring-red-200' : ''
-        } ${className}`}
+        className={`w-full px-4 py-2.5 bg-[#F5F3EF] text-[#141414] placeholder-[#141414]/40 border-2 border-[#141414] focus:bg-white focus:outline-none focus:ring-0 focus:shadow-brutal-sm text-sm font-sans ${error ? 'border-[#E8402C] bg-red-50' : ''
+          } ${className}`}
         {...props}
       />
-      {error && <span className="text-xs text-red-600 mt-0.5">{error}</span>}
+      {error && <span className="text-xs font-bold text-[#E8402C] uppercase mt-0.5">{error}</span>}
     </div>
   );
 };
@@ -41,14 +41,15 @@ export const Textarea = ({
   rows = 3,
   ...props
 }) => {
-  const inputId = id || props.name || Math.random().toString(36).substring(7);
+  const generatedId = useId();
+  const inputId = id || props.name || generatedId;
 
   return (
     <div className="w-full flex flex-col gap-1.5">
       {label && (
         <label
           htmlFor={inputId}
-          className="text-xs font-semibold uppercase tracking-wider text-[#78665B]"
+          className="text-xs font-heading font-extrabold uppercase tracking-wider text-[#141414]"
         >
           {label}
         </label>
@@ -56,12 +57,11 @@ export const Textarea = ({
       <textarea
         id={inputId}
         rows={rows}
-        className={`w-full px-4 py-2.5 bg-[#FAF3E8] text-[#3A2E27] placeholder-[#78665B]/60 rounded-xl border border-[#E4D3BE] focus:border-[#E3A08A] focus:ring-2 focus:ring-[#E3A08A]/30 transition-colors duration-200 outline-none text-sm resize-none ${
-          error ? 'border-red-400 focus:ring-red-200' : ''
-        } ${className}`}
+        className={`w-full px-4 py-2.5 bg-[#F5F3EF] text-[#141414] placeholder-[#141414]/40 border-2 border-[#141414] focus:bg-white focus:outline-none focus:ring-0 focus:shadow-brutal-sm text-sm font-sans resize-none ${error ? 'border-[#E8402C] bg-red-50' : ''
+          } ${className}`}
         {...props}
       />
-      {error && <span className="text-xs text-red-600 mt-0.5">{error}</span>}
+      {error && <span className="text-xs font-bold text-[#E8402C] uppercase mt-0.5">{error}</span>}
     </div>
   );
 };

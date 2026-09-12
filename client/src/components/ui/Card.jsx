@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const Card = ({
   children,
   className = '',
@@ -8,13 +6,17 @@ export const Card = ({
 }) => {
   const variants = {
     default:
-      'bg-[#F0E4D3] border border-[#E4D3BE]/80 rounded-2xl p-5 shadow-[0_4px_16px_rgba(58,46,39,0.07)]',
-    sticky:
-      'bg-[#FFF9E6] border border-[#EFE2B8] rounded-xl p-5 shadow-[0_6px_18px_rgba(58,46,39,0.08)] relative',
+      'bg-[#F5F3EF] border-2 border-[#141414] p-5 shadow-brutal',
     panel:
-      'bg-[#FAF3E8] border border-[#E4D3BE] rounded-3xl p-6 shadow-sm',
-    accent:
-      'bg-gradient-to-br from-[#F0E4D3] to-[#E8D9C5] border border-[#E3A08A]/30 rounded-2xl p-5 shadow-[0_6px_20px_rgba(58,46,39,0.09)]',
+      'bg-[#F5F3EF] border-2 border-[#141414] p-6 shadow-brutal-lg',
+    red:
+      'bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] p-5 shadow-brutal',
+    blue:
+      'bg-[#2B4AE8] text-[#F5F3EF] border-2 border-[#141414] p-5 shadow-brutal',
+    yellow:
+      'bg-[#F2B705] text-[#141414] border-2 border-[#141414] p-5 shadow-brutal',
+    white:
+      'bg-white border-2 border-[#141414] p-5 shadow-brutal',
   };
 
   return (

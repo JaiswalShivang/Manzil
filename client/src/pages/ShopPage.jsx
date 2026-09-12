@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
 import { ShopItemCard } from '../components/shop/ShopItemCard';
 import { Skeleton } from '../components/ui/Skeleton';
-import { Store, Coins, Sparkles, Filter } from 'lucide-react';
 
 export const ShopPage = () => {
   const { user, updateUserData } = useAuth();
@@ -43,7 +42,7 @@ export const ShopPage = () => {
       return res.data;
     },
     onSuccess: (data) => {
-      setNotification({ type: 'success', message: data.message });
+      setNotification({ type: 'success', message: data.message.toUpperCase() });
       if (data.user) {
         updateUserData(data.user);
       }
@@ -52,7 +51,7 @@ export const ShopPage = () => {
     onError: (err) => {
       setNotification({
         type: 'error',
-        message: err.response?.data?.message || 'Could not complete purchase',
+        message: (err.response?.data?.message || 'TRANSACTION REJECTED: INSUFFICIENT CLEARANCE').toUpperCase(),
       });
     },
   });
@@ -64,7 +63,7 @@ export const ShopPage = () => {
       return res.data;
     },
     onSuccess: (data) => {
-      setNotification({ type: 'success', message: 'Item placed in your study room! 🪴' });
+      setNotification({ type: 'success', message: 'ASSET MOUNTED IN COMMAND DECK.' });
       if (data.user) {
         updateUserData(data.user);
       }
@@ -72,7 +71,7 @@ export const ShopPage = () => {
     onError: (err) => {
       setNotification({
         type: 'error',
-        message: err.response?.data?.message || 'Could not equip item',
+        message: (err.response?.data?.message || 'FAILED TO MOUNT ASSET').toUpperCase(),
       });
     },
   });
@@ -84,7 +83,7 @@ export const ShopPage = () => {
       return res.data;
     },
     onSuccess: (data) => {
-      setNotification({ type: 'success', message: 'Item stored back in inventory.' });
+      setNotification({ type: 'success', message: 'ASSET RETURNED TO TACTICAL STORAGE.' });
       if (data.user) {
         updateUserData(data.user);
       }
@@ -92,78 +91,83 @@ export const ShopPage = () => {
     onError: (err) => {
       setNotification({
         type: 'error',
-        message: err.response?.data?.message || 'Could not unequip item',
+        message: (err.response?.data?.message || 'FAILED TO DEMOUNT ASSET').toUpperCase(),
       });
     },
   });
 
   const categories = [
-    { id: '', label: 'All Decor' },
-    { id: 'plant', label: 'Plants 🪴' },
-    { id: 'lamp', label: 'Lighting 💡' },
-    { id: 'poster', label: 'Art Prints 🖼️' },
-    { id: 'rug', label: 'Cozy Rugs 🧶' },
-    { id: 'mug', label: 'Drinks & Mugs ☕' },
-    { id: 'wallpaper', label: 'Wallpapers 🎨' },
+    { id: '', label: 'ALL ASSETS' },
+    { id: 'plant', label: 'BIO-SPECIMENS' },
+    { id: 'lamp', label: 'LIGHTING ARRAYS' },
+    { id: 'poster', label: 'GRAPHIC SCHEMATICS' },
+    { id: 'rug', label: 'DECK FLOORING' },
+    { id: 'mug', label: 'RATIONS & CONTAINERS' },
+    { id: 'wallpaper', label: 'BULKHEAD WALLPAPERS' },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header Banner */}
-      <div className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-[#FAF3E8] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2">
-            <Store className="w-6 h-6 text-[#E3A08A]" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#3A2E27] tracking-tight">
-              The Cozy Corner Shop
-            </h1>
+          <div className="inline-block bg-[#141414] text-white text-[11px] font-mono font-bold px-2 py-0.5 mb-2">
+            // REQUISITION TERMINAL
           </div>
-          <p className="text-xs text-[#78665B] mt-0.5">
-            Exchange your earned Cozy Coins for furniture and decorations that physically appear in your study room
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#141414] font-space tracking-tight uppercase">
+            THE VAULT
+          </h1>
+          <p className="text-xs sm:text-sm font-bold text-[#141414]/70 mt-1 uppercase tracking-wider">
+            EXCHANGE SURPLUS GOLD FOR TACTICAL DECOR, TERMINAL HARDWARE, AND ROOM ASSETS.
           </p>
         </div>
 
-        {/* Coin Pouch Indicator */}
-        <div className="flex items-center gap-2.5 bg-[#FAF3E8] border border-[#E4D3BE] px-5 py-2.5 rounded-2xl shadow-xs self-start sm:self-auto">
-          <Coins className="w-6 h-6 text-[#F4C572]" />
+        {/* Currency Display */}
+        <div className="bg-[#F2B705] border-3 border-[#141414] p-4 shadow-brutal flex items-center gap-4 self-start md:self-auto min-w-[220px]">
+          <div className="w-10 h-10 bg-[#141414] flex items-center justify-center text-[#F2B705] font-extrabold text-lg">
+            $
+          </div>
           <div>
-            <span className="text-[10px] font-bold text-[#78665B] uppercase block leading-none">
-              Your Coin Pouch
-            </span>
-            <span className="text-lg font-extrabold text-[#855D16]">
-              {user?.cozyCoins || 0} Cozy Coins
-            </span>
+            <div className="text-[10px] font-black uppercase tracking-widest text-[#141414]">
+              REQUISITION RESERVE
+            </div>
+            <div className="text-2xl font-extrabold font-space text-[#141414]">
+              {user?.cozyCoins || 0} <span className="text-xs font-black">GOLD</span>
+            </div>
           </div>
         </div>
       </div>
 
       {notification && (
         <div
-          className={`p-3 rounded-2xl text-xs flex items-center justify-between border ${
+          className={`p-4 border-3 border-[#141414] shadow-brutal text-xs font-mono font-bold flex items-center justify-between ${
             notification.type === 'success'
-              ? 'bg-[#9CAF88]/20 border-[#9CAF88]/50 text-[#4D6339]'
-              : 'bg-red-100 border-red-200 text-red-800'
+              ? 'bg-[#2B4AE8] text-white'
+              : 'bg-[#E8402C] text-white'
           }`}
         >
-          <span>{notification.message}</span>
-          <button onClick={() => setNotification(null)} className="font-bold cursor-pointer">
-            ✕
+          <span>// STATUS: {notification.message}</span>
+          <button
+            onClick={() => setNotification(null)}
+            className="px-2 py-0.5 bg-[#141414] text-white cursor-pointer hover:bg-white hover:text-[#141414] transition-none"
+          >
+            DISMISS [X]
           </button>
         </div>
       )}
 
       {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b-2 border-[#141414]/20">
         {categories.map((cat) => {
           const isSelected = categoryFilter === cat.id;
           return (
             <button
               key={cat.id}
               onClick={() => setCategoryFilter(cat.id)}
-              className={`px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-4 py-2 text-xs font-mono font-bold uppercase transition-none cursor-pointer border-2 border-[#141414] ${
                 isSelected
-                  ? 'bg-[#E3A08A] text-[#3A2E27] shadow-sm font-bold'
-                  : 'bg-[#F0E4D3] text-[#78665B] hover:text-[#3A2E27] border border-[#E4D3BE]'
+                  ? 'bg-[#141414] text-[#F5F3EF] shadow-brutal'
+                  : 'bg-[#F5F3EF] text-[#141414] hover:bg-[#FAF3E8]'
               }`}
             >
               {cat.label}
@@ -174,24 +178,28 @@ export const ShopPage = () => {
 
       {/* Shop Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-[#F0E4D3] rounded-2xl p-5 border border-[#E4D3BE] space-y-3">
-              <Skeleton width="w-20" height="h-4" rounded="rounded-full" />
-              <Skeleton width="w-full" height="h-28" rounded="rounded-xl" />
-              <Skeleton width="w-3/4" height="h-5" />
-              <Skeleton width="w-full" height="h-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="bg-[#FAF3E8] border-3 border-[#141414] p-5 space-y-4">
+              <Skeleton width="w-24" height="h-5" />
+              <Skeleton width="w-full" height="h-32" />
+              <Skeleton width="w-3/4" height="h-6" />
+              <Skeleton width="w-full" height="h-10" />
             </div>
           ))}
         </div>
       ) : shopItems.length === 0 ? (
-        <div className="bg-[#FFF9E6] border border-[#EFE2B8] rounded-3xl p-12 text-center">
-          <span className="text-4xl mb-3">🪴</span>
-          <h3 className="text-lg font-bold text-[#3A2E27]">No Items In This Category</h3>
-          <p className="text-xs text-[#78665B] mt-1">Check back soon as new seasonal stock arrives!</p>
+        <div className="bg-[#FAF3E8] border-3 border-[#141414] p-12 text-center shadow-brutal">
+          <div className="text-4xl font-space font-extrabold text-[#141414] mb-2">[ 00 ]</div>
+          <h3 className="text-lg font-extrabold font-space text-[#141414] uppercase">
+            ZERO ASSETS FOUND IN SECTOR
+          </h3>
+          <p className="text-xs font-mono text-[#141414]/70 mt-1 uppercase">
+            REVISE CATEGORY FILTER OR STAND BY FOR QUARTERMASTER RESTOCK.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {shopItems.map((item) => {
             const isOwned = ownedItemIds.has(item._id.toString());
             const isEquipped = equippedItemIds.has(item._id.toString());

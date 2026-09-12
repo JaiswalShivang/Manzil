@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/client';
@@ -6,13 +6,12 @@ import { QuestCard } from '../components/quest/QuestCard';
 import { QuestFormModal } from '../components/quest/QuestFormModal';
 import { QuestFilter } from '../components/quest/QuestFilter';
 import { LevelUpModal } from '../components/levelup/LevelUpModal';
-import { triggerCozyCelebration } from '../components/levelup/CelebrationBurst';
 import { Button } from '../components/ui/Button';
 import { QuestCardSkeleton } from '../components/ui/Skeleton';
-import { ScrollText, Plus, Search, Sparkles } from 'lucide-react';
+import { ScrollText, Plus, Search } from 'lucide-react';
 
 export const QuestLogPage = () => {
-  const { user, updateUserData } = useAuth();
+  const { updateUserData } = useAuth();
   const queryClient = useQueryClient();
 
   const [statusFilter, setStatusFilter] = useState('');
@@ -37,7 +36,6 @@ export const QuestLogPage = () => {
 
   const quests = questsData?.quests || [];
 
-  // Client-side search filtering
   const filteredQuests = quests.filter((q) => {
     if (!searchQuery.trim()) return true;
     return (
@@ -46,7 +44,6 @@ export const QuestLogPage = () => {
     );
   });
 
-  // Calculate counts
   const totalPending = quests.filter((q) => q.status === 'pending').length;
   const totalCompleted = quests.filter((q) => q.status === 'completed').length;
 
@@ -75,7 +72,6 @@ export const QuestLogPage = () => {
       await queryClient.cancelQueries({ queryKey: ['quests'] });
       const previous = queryClient.getQueryData(['quests', statusFilter, categoryFilter]);
 
-      // Optimistically update quest status
       queryClient.setQueryData(['quests', statusFilter, categoryFilter], (old) => {
         if (!old) return old;
         return {
@@ -89,7 +85,6 @@ export const QuestLogPage = () => {
       return { previous };
     },
     onSuccess: (data) => {
-      triggerCozyCelebration();
       if (data.user) {
         updateUserData(data.user);
       }
@@ -121,18 +116,18 @@ export const QuestLogPage = () => {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b-3 border-[#141414]">
         <div>
           <div className="flex items-center gap-2">
-            <ScrollText className="w-6 h-6 text-[#E3A08A]" />
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#3A2E27] tracking-tight">
-              Quest Log
+            <ScrollText className="w-6 h-6 text-[#E8402C]" />
+            <h1 className="text-3xl sm:text-4xl font-heading font-black text-[#141414] uppercase tracking-tight">
+              QUEST LOG
             </h1>
           </div>
-          <p className="text-xs text-[#78665B] mt-0.5">
-            Manage your daily study sessions, habits, and life milestones
+          <p className="text-xs font-heading font-bold uppercase text-[#141414]/60 mt-1">
+            MANAGE DEPLOYABLE TASKS AND EXECUTION MILESTONES
           </p>
         </div>
 
@@ -140,31 +135,30 @@ export const QuestLogPage = () => {
           onClick={() => setIsModalOpen(true)}
           variant="primary"
           size="md"
-          className="font-bold shadow-md"
+          className="font-black"
         >
           <Plus className="w-4 h-4" />
-          <span>New Quest ✍️</span>
+          <span>LOG NEW QUEST →</span>
         </Button>
       </div>
 
       {errorMessage && (
-        <div className="p-3 bg-red-100 border border-red-200 text-red-800 rounded-2xl text-xs flex items-center justify-between">
+        <div className="p-3 bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] text-xs font-heading font-bold uppercase flex items-center justify-between shadow-brutal-sm">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage(null)} className="font-bold cursor-pointer">✕</button>
+          <button onClick={() => setErrorMessage(null)} className="font-black cursor-pointer">✕</button>
         </div>
       )}
 
       {/* Filter and Search Bar */}
       <div className="space-y-3">
-        {/* Search input */}
         <div className="relative">
-          <Search className="w-4 h-4 text-[#78665B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#141414]/60 absolute left-3.5 top-1/2 -translate-y-1/2 stroke-[2.5]" />
           <input
             type="text"
-            placeholder="Search quests by title or note keywords..."
+            placeholder="SEARCH QUESTS BY DESIGNATION OR DIRECTIVE KEYWORDS..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#F0E4D3] text-[#3A2E27] placeholder-[#78665B]/60 rounded-xl border border-[#E4D3BE] focus:border-[#E3A08A] focus:ring-2 focus:ring-[#E3A08A]/30 transition-colors duration-200 outline-none text-xs"
+            className="w-full pl-10 pr-4 py-2.5 bg-white text-[#141414] placeholder-[#141414]/40 border-2 border-[#141414] focus:outline-none focus:shadow-brutal-sm text-xs font-heading font-bold uppercase"
           />
         </div>
 
@@ -186,21 +180,23 @@ export const QuestLogPage = () => {
           <QuestCardSkeleton />
         </div>
       ) : filteredQuests.length === 0 ? (
-        <div className="bg-[#FFF9E6] border border-[#EFE2B8] rounded-3xl p-12 text-center flex flex-col items-center">
+        <div className="bg-white border-2 border-[#141414] p-12 text-center flex flex-col items-center shadow-brutal">
           <span className="text-4xl mb-3">📜</span>
-          <h3 className="text-lg font-bold text-[#3A2E27]">No Quests Found</h3>
-          <p className="text-xs text-[#78665B] max-w-sm mt-1 mb-5">
+          <h3 className="text-xl font-heading font-black text-[#141414] uppercase">
+            NO MATCHING DIRECTIVES
+          </h3>
+          <p className="text-xs font-sans text-[#141414]/70 max-w-sm mt-1 mb-6">
             {searchQuery || categoryFilter || statusFilter
-              ? 'No quests match your active filter settings. Try adjusting filters or search query.'
-              : 'Your quest log is empty. Write your first study goal to start earning Focus Points!'}
+              ? 'No quests match your active filter parameters. Adjust search string or filter vectors.'
+              : 'Your active queue is clear. Log a new task to resume XP accumulation.'}
           </p>
           <Button
             onClick={() => setIsModalOpen(true)}
             variant="primary"
             size="sm"
-            className="font-bold"
+            className="font-black"
           >
-            <Plus className="w-4 h-4" /> Add Quest ✍️
+            <Plus className="w-4 h-4" /> COMMIT QUEST →
           </Button>
         </div>
       ) : (
@@ -217,7 +213,6 @@ export const QuestLogPage = () => {
         </div>
       )}
 
-      {/* Modal */}
       <QuestFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

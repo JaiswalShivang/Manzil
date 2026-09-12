@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, CloudRain, Flame, Music } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 export const AmbientSound = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [mode, setMode] = useState('rain'); // 'rain' or 'fire'
   const [volume, setVolume] = useState(0.3);
   const audioCtxRef = useRef(null);
   const gainNodeRef = useRef(null);
@@ -14,7 +13,7 @@ export const AmbientSound = () => {
       if (audioCtxRef.current) {
         try {
           audioCtxRef.current.close();
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -23,10 +22,10 @@ export const AmbientSound = () => {
 
   const startAudio = () => {
     try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
 
-      const ctx = new AudioContext();
+      const ctx = new AudioContextClass();
       audioCtxRef.current = ctx;
 
       // Master gain
@@ -35,7 +34,7 @@ export const AmbientSound = () => {
       masterGain.connect(ctx.destination);
       gainNodeRef.current = masterGain;
 
-      // Generate brown noise buffer for deep soothing rain / fireplace
+      // Generate noise buffer
       const bufferSize = ctx.sampleRate * 2;
       const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
@@ -43,20 +42,18 @@ export const AmbientSound = () => {
 
       for (let i = 0; i < bufferSize; i++) {
         const white = Math.random() * 2 - 1;
-        // Brown noise filter approximation
         output[i] = (lastOut + 0.02 * white) / 1.02;
         lastOut = output[i];
-        output[i] *= 3.5; // Gain boost
+        output[i] *= 3.5;
       }
 
       const whiteNoise = ctx.createBufferSource();
       whiteNoise.buffer = noiseBuffer;
       whiteNoise.loop = true;
 
-      // Lowpass filter for cozy muffled rain
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(mode === 'rain' ? 450 : 320, ctx.currentTime);
+      filter.frequency.setValueAtTime(450, ctx.currentTime);
 
       whiteNoise.connect(filter);
       filter.connect(masterGain);
@@ -64,8 +61,8 @@ export const AmbientSound = () => {
       whiteNoise.start();
       noiseSourceRef.current = whiteNoise;
       setIsPlaying(true);
-    } catch (e) {
-      console.warn('Web Audio playback error:', e);
+    } catch {
+      // Audio playback unavailable
     }
   };
 
@@ -73,12 +70,16 @@ export const AmbientSound = () => {
     if (noiseSourceRef.current) {
       try {
         noiseSourceRef.current.stop();
-      } catch (e) {}
+      } catch {
+        // audio already stopped
+      }
     }
     if (audioCtxRef.current) {
       try {
         audioCtxRef.current.close();
-      } catch (e) {}
+      } catch {
+        // audio context already closed
+      }
     }
     setIsPlaying(false);
   };
@@ -92,21 +93,21 @@ export const AmbientSound = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-[#F0E4D3] border border-[#E4D3BE] px-3 py-1.5 rounded-full shadow-sm text-xs text-[#78665B]">
+    <div className="flex items-center gap-2 bg-[#F5F3EF] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-bold text-[#141414]">
       <button
         onClick={togglePlay}
-        className="flex items-center gap-1.5 font-medium hover:text-[#3A2E27] transition-colors cursor-pointer"
-        title={isPlaying ? 'Mute ambient study sounds' : 'Play cozy ambient rain sounds'}
+        className="flex items-center gap-1.5 hover:text-[#E8402C] transition-none cursor-pointer uppercase"
+        title={isPlaying ? 'Mute ambient sound' : 'Play white noise'}
       >
         {isPlaying ? (
           <>
-            <Volume2 className="w-3.5 h-3.5 text-[#9CAF88] animate-pulse" />
-            <span className="hidden sm:inline">Cozy Rain</span>
+            <Volume2 className="w-3.5 h-3.5 text-[#E8402C]" />
+            <span className="hidden sm:inline">AUDIO ON</span>
           </>
         ) : (
           <>
-            <VolumeX className="w-3.5 h-3.5 text-[#78665B]" />
-            <span className="hidden sm:inline">Ambient Rain</span>
+            <VolumeX className="w-3.5 h-3.5 text-[#141414]/60" />
+            <span className="hidden sm:inline">AUDIO MUTED</span>
           </>
         )}
       </button>
@@ -125,7 +126,7 @@ export const AmbientSound = () => {
               gainNodeRef.current.gain.setValueAtTime(val, audioCtxRef.current.currentTime);
             }
           }}
-          className="w-14 h-1 bg-[#E4D3BE] rounded-lg accent-[#E3A08A] cursor-pointer"
+          className="w-12 h-1 accent-[#E8402C] cursor-pointer"
           title="Ambient Volume"
         />
       )}

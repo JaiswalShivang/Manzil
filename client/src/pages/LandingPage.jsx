@@ -1,572 +1,741 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
-import { StudyRoomScene } from '../components/room/StudyRoomScene';
 import {
   Sparkles,
-  Flame,
-  Store,
-  CheckCircle2,
-  Heart,
-  BookOpen,
-  ArrowRight,
-  Shield
+  Lock,
+  Play,
+  Pause,
+  Terminal,
+  Zap,
 } from 'lucide-react';
 
-// Animated Count-Up Number Component
-const AnimatedCounter = ({ target, suffix = '', label }) => {
-  const [count, setCount] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  useEffect(() => {
-    if (!hasStarted) return;
-    let start = 0;
-    const duration = 1800;
-    const steps = 60;
-    const stepTime = duration / steps;
-    const increment = target / steps;
-
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, stepTime);
-
-    return () => clearInterval(timer);
-  }, [hasStarted, target]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      onViewportEnter={() => setHasStarted(true)}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col items-center text-center p-4"
-    >
-      <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#3A2E27] tracking-tight font-sans">
-        {count.toLocaleString()}
-        {suffix}
-      </div>
-      <div className="text-xs sm:text-sm font-semibold text-[#78665B] mt-1.5">
-        {label}
-      </div>
-    </motion.div>
-  );
-};
-
 export const LandingPage = () => {
-  // Demo user showing equipped decorations in preview
-  const demoUser = {
-    username: 'Lofi Scholar',
-    level: 3,
-    inventory: [
-      { equipped: true, itemId: { category: 'plant', imageKey: 'monstera' } },
-      { equipped: true, itemId: { category: 'poster', imageKey: 'lofi_cat_window' } },
-      { equipped: true, itemId: { category: 'rug', imageKey: 'boho_woven_rug' } },
-      { equipped: true, itemId: { category: 'mug', imageKey: 'terracotta_tea_cup' } },
-    ],
-  };
+  // -------------------------------------------------------------
+  // HERO FEATURE: INTERACTIVE PROGRESSION PIPELINE (5 STAGES)
+  // -------------------------------------------------------------
+  const [pipelineStage, setPipelineStage] = useState(0);
+  const [isAutoplay, setIsAutoplay] = useState(true);
 
-  // State for interactive "How It Works" tab
-  const [activeStep, setActiveStep] = useState(0);
-
-  // State for interactive live skill meter preview
-  const [skillProgress, setSkillProgress] = useState({
-    intellect: 85,
-    vitality: 55,
-    discipline: 70,
-    creativity: 60,
-  });
-  const [simulatedCount, setSimulatedCount] = useState(0);
-
-  const simulateQuestCompletion = () => {
-    setSkillProgress((prev) => ({
-      intellect: Math.min(100, prev.intellect + 5),
-      vitality: Math.min(100, prev.vitality + 8),
-      discipline: Math.min(100, prev.discipline + 6),
-      creativity: Math.min(100, prev.creativity + 7),
-    }));
-    setSimulatedCount((c) => c + 1);
-  };
-
-  const steps = [
+  const pipelineStages = [
     {
-      step: '01',
-      title: 'Log a Quest',
-      desc: 'Turn any real-world habit, coding sprint, or reading goal into an RPG quest in seconds.',
-      detail: 'Choose a skill category: Intellect, Vitality, Discipline, or Creativity.',
-      icon: '✍️',
-      badge: 'Step 1: Set Goals',
+      id: 0,
+      number: '01',
+      label: 'LOG A QUEST',
+      short: 'INPUT',
+      accent: 'bg-[#2B4AE8]',
+      inputLabel: 'ACTIVE TASK INPUT',
+      inputContent: {
+        title: 'Complete Distributed Systems Chapter 4',
+        category: 'INTELLECT',
+        categoryColor: 'bg-[#2B4AE8] text-[#F5F3EF]',
+        status: 'PENDING EXECUTION',
+      },
+      transformLabel: 'PARSING & VALIDATION',
+      transformContent: 'Verifying user ownership & assigning server-side reward caps (45 XP, 25 Gold).',
+      outputLabel: 'PROJECTED REWARD',
+      outputContent: {
+        xp: '+45 XP',
+        gold: '+25 GOLD',
+        stat: '+5 INTELLECT',
+      },
     },
     {
-      step: '02',
-      title: 'Complete & Focus',
-      desc: 'Work on your task with cozy ambient sound and check it off when you finish.',
-      detail: 'Earn Focus Points (XP) and Cozy Coins with non-linear leveling math.',
-      icon: '✨',
-      badge: 'Step 2: Earn Rewards',
+      id: 1,
+      number: '02',
+      label: 'COMPLETE IT',
+      short: 'EXECUTION',
+      accent: 'bg-[#E8402C]',
+      inputLabel: 'EXECUTION CHECK',
+      inputContent: {
+        title: 'Task Marked Complete in Log',
+        category: 'INTELLECT',
+        categoryColor: 'bg-[#2B4AE8] text-[#F5F3EF]',
+        status: 'VERIFIED ON BACKEND',
+      },
+      transformLabel: 'STATE TRANSITION',
+      transformContent: 'POST /api/quests/:id/complete triggered. Non-linear level formula computed in Node.js.',
+      outputLabel: 'SYSTEM EVENT',
+      outputContent: {
+        xp: 'QUEST RESOLVED',
+        gold: 'TIMESTAMP RECORDED',
+        stat: 'STREAK INCREMENTED',
+      },
     },
     {
-      step: '03',
-      title: 'Watch Your Room Bloom',
-      desc: 'Level up your space and spend your coins in The Cozy Corner Shop.',
-      detail: 'Equip lush monstera plants, retro lamps, and wall art that render directly in your room.',
-      icon: '🪴',
-      badge: 'Step 3: Furnish Room',
+      id: 2,
+      number: '03',
+      label: 'EARN XP & GOLD',
+      short: 'PAYLOAD',
+      accent: 'bg-[#F2B705]',
+      inputLabel: 'LEDGER UPDATE',
+      inputContent: {
+        title: 'XP Overflow Evaluation',
+        category: 'ECONOMY',
+        categoryColor: 'bg-[#F2B705] text-[#141414]',
+        status: 'CREDITING ASSETS',
+      },
+      transformLabel: 'MATH VERIFICATION',
+      transformContent: 'Current XP (90) + Earned (45) = 135 XP. Threshold for Level 2 is 100 XP.',
+      outputLabel: 'BALANCE DELTA',
+      outputContent: {
+        xp: '+45 XP CREDITED',
+        gold: '+25 GOLD ADDED',
+        stat: 'OVERFLOW: +35 XP',
+      },
+    },
+    {
+      id: 3,
+      number: '04',
+      label: 'LEVEL UP',
+      short: 'ELEVATION',
+      accent: 'bg-[#E8402C]',
+      inputLabel: 'THRESHOLD CROSSING',
+      inputContent: {
+        title: 'Elevation to Level 2',
+        category: 'PROGRESSION',
+        categoryColor: 'bg-[#E8402C] text-[#F5F3EF]',
+        status: 'LEVEL UNLOCKED',
+      },
+      transformLabel: 'PROGRESSION ENGINE',
+      transformContent: 'User elevated to Level 2! Tier bonus +25 Gold credited. Vault items unlocked.',
+      outputLabel: 'COMMAND SUMMARY',
+      outputContent: {
+        xp: 'LV. 2 CONFIRMED',
+        gold: '+25 BONUS GOLD',
+        stat: 'NEW ITEMS UNLOCKED',
+      },
+    },
+    {
+      id: 4,
+      number: '05',
+      label: 'UNLOCK GEAR',
+      short: 'ACQUISITION',
+      accent: 'bg-[#141414]',
+      inputLabel: 'THE VAULT UNLOCKED',
+      inputContent: {
+        title: 'Obsidian Terminal Rig Acquired',
+        category: 'HARDWARE',
+        categoryColor: 'bg-[#141414] text-[#F5F3EF]',
+        status: 'EQUIPPED IN HQ',
+      },
+      transformLabel: 'INVENTORY UPDATE',
+      transformContent: 'Item purchased with verified server gold balance. HQ scene rendered with new rig.',
+      outputLabel: 'ACTIVE GEAR',
+      outputContent: {
+        xp: 'RIG DEPLOYED',
+        gold: 'INVENTORY SAVED',
+        stat: 'COMMAND DECK ARMED',
+      },
+    },
+  ];
+
+  // Autoplay ticker
+  useEffect(() => {
+    if (!isAutoplay) return;
+    const interval = setInterval(() => {
+      setPipelineStage((prev) => (prev + 1) % pipelineStages.length);
+    }, 3800);
+    return () => clearInterval(interval);
+  }, [isAutoplay, pipelineStages.length]);
+
+  const activeStageData = pipelineStages[pipelineStage];
+
+  // Sample Vault gear cards for preview
+  const vaultPreviewItems = [
+    {
+      name: 'NEO-CONSTRUCTIVIST DESK RIG',
+      category: 'HARDWARE',
+      cost: 40,
+      unlockLevel: 1,
+      accent: 'border-[#141414]',
+      isLocked: false,
+    },
+    {
+      name: 'MONSTERA BIO-MODULE',
+      category: 'BOTANICAL',
+      cost: 65,
+      unlockLevel: 2,
+      accent: 'border-[#2B4AE8]',
+      isLocked: false,
+    },
+    {
+      name: 'BAUHAUS GRID POSTER 01',
+      category: 'GRAPHIC',
+      cost: 35,
+      unlockLevel: 1,
+      accent: 'border-[#E8402C]',
+      isLocked: false,
+    },
+    {
+      name: 'OBSIDIAN CHRONO LAMP',
+      category: 'LIGHTING',
+      cost: 120,
+      unlockLevel: 3,
+      accent: 'border-[#F2B705]',
+      isLocked: true,
     },
   ];
 
   return (
-    <div className="relative overflow-hidden flex flex-col gap-20 sm:gap-28 py-6 sm:py-12">
-      {/* Soft Ambient Glow Blobs Behind Hero */}
-      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-br from-[#F4C572]/20 via-[#E3A08A]/15 to-[#B9A6D9]/15 blur-3xl -z-10 rounded-full" />
-      <div className="pointer-events-none absolute top-[700px] right-0 w-[450px] h-[450px] bg-[#9CAF88]/15 blur-3xl -z-10 rounded-full" />
-      <div className="pointer-events-none absolute top-[1600px] left-0 w-[500px] h-[500px] bg-[#F4C572]/15 blur-3xl -z-10 rounded-full" />
+    <div className="flex flex-col gap-0 bg-[#F5F3EF] text-[#141414]">
+      {/* ------------------------------------------------------------- */}
+      {/* 2. HERO SECTION */}
+      {/* ------------------------------------------------------------- */}
+      <section className="border-b-3 border-[#141414] py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-[#F5F3EF]">
+        <div className="max-w-7xl mx-auto flex flex-col items-start">
+          {/* Eyebrow Badge */}
+          <div className="inline-flex items-center gap-2 bg-[#141414] text-[#F5F3EF] px-3.5 py-1 text-xs font-heading font-black tracking-widest uppercase border-2 border-[#141414] mb-6 shadow-brutal-sm">
+            <span className="w-2 h-2 bg-[#E8402C]"></span>
+            <span>THE FULL-STACK PRODUCTIVITY RPG</span>
+          </div>
 
-      {/* 1. HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E3A08A]/20 border border-[#E3A08A]/40 text-xs font-bold text-[#3A2E27] mb-6 shadow-xs"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-[#E3A08A]" />
-          <span>The Cozy Lo-Fi Gamified Productivity App</span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-[#3A2E27] tracking-tight max-w-4xl font-sans leading-[1.08]"
-        >
-          Turn your daily study goals into a{' '}
-          <span className="relative inline-block text-[#E3A08A]">
-            cozy RPG journey
-            {/* Hand-drawn underline accent */}
-            <svg
-              className="absolute -bottom-2.5 left-0 w-full h-3 text-[#F4C572] pointer-events-none"
-              viewBox="0 0 250 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 8.5C50 2 150 2 247 8.5"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-6 text-base sm:text-xl text-[#78665B] max-w-2xl font-normal leading-relaxed"
-        >
-          Complete real-world habits, study sessions, and projects. Earn Focus Points, level up your
-          space, and watch your personal study room bloom with plants, warm lights, and decorations.
-        </motion.p>
-
-        {/* Action CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
-        >
-          <Link to="/register" className="w-full sm:w-auto">
-            <Button
-              size="lg"
-              variant="primary"
-              className="w-full sm:w-auto text-base px-8 py-3.5 shadow-[0_6px_20px_rgba(227,160,138,0.35)] hover:shadow-[0_8px_25px_rgba(227,160,138,0.45)] font-bold transition-all"
-            >
-              Start Your Quest — It's Free ✍️
-            </Button>
-          </Link>
-          <Link to="/login" className="w-full sm:w-auto">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="w-full sm:w-auto text-base px-7 py-3.5 shadow-xs"
-            >
-              Enter Existing Nook
-            </Button>
-          </Link>
-        </motion.div>
-
-        {/* Interactive Demo Room Section with Dual Shadows & Glow */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-14 w-full max-w-4xl mx-auto relative"
-        >
-          {/* Warm Backdrop Glow behind demo */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F4C572]/20 via-[#E3A08A]/15 to-[#B9A6D9]/20 blur-2xl -z-10 rounded-3xl transform scale-95" />
-
-          <div className="text-left mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-[#78665B] px-1">
-            <span className="font-handwritten text-base font-bold text-[#3A2E27] flex items-center gap-1.5">
-              <span>✨</span>
-              <span>Interactive Study Nook (Try hovering books, clicking the cat poster, plant & lamp!)</span>
+          {/* Oversized Uppercase Headline */}
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-heading font-black tracking-tighter uppercase leading-[0.92] text-[#141414] max-w-5xl mb-6">
+            STOP DRIFTING.{' '}
+            <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0 inline-block shadow-brutal">
+              START LEVELING.
             </span>
-            <span className="text-[11px] bg-[#F0E4D3] px-2.5 py-0.5 rounded-full border border-[#E4D3BE]">
-              Live Interactive Room Demo
-            </span>
-          </div>
+          </h1>
 
-          <StudyRoomScene user={demoUser} />
-        </motion.div>
-      </section>
-
-      {/* 2. "HOW IT WORKS" — 3-STEP HORIZONTAL TIMELINE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#E3A08A] block mb-1">
-            The Gameplay Loop
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#3A2E27] tracking-tight">
-            How Life RPG Works
-          </h2>
-          <p className="mt-2 text-sm text-[#78665B]">
-            Three gentle steps turning everyday effort into an evolving sanctuary.
+          {/* One-Line Subhead */}
+          <p className="text-base sm:text-xl font-sans text-[#141414]/80 max-w-2xl font-medium leading-relaxed mb-8">
+            Transform real-world study goals, routines, and coding milestones into verifiable RPG character stats, server-guarded gold, and unlocked gear.
           </p>
-        </div>
 
-        {/* Timeline Horizontal Pipeline */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-          {/* Dashed connector line between stages (desktop only) */}
-          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 border-t-2 border-dashed border-[#E4D3BE] -z-10" />
-
-          {steps.map((item, idx) => {
-            const isSelected = activeStep === idx;
-            return (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 25 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.12 }}
-                onClick={() => setActiveStep(idx)}
-                className={`relative rounded-3xl p-6 sm:p-7 border cursor-pointer transition-all duration-300 flex flex-col justify-between ${isSelected
-                    ? 'bg-[#F0E4D3] border-[#E3A08A] shadow-[0_8px_24px_rgba(58,46,39,0.1)] -translate-y-1.5'
-                    : 'bg-[#FAF3E8] border-[#E4D3BE] hover:bg-[#F0E4D3]/70 hover:-translate-y-1'
-                  }`}
-              >
-                <div>
-                  {/* Step Numeral Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-xs transition-colors ${isSelected
-                          ? 'bg-[#E3A08A] text-[#3A2E27] shadow-[0_4px_12px_rgba(227,160,138,0.3)]'
-                          : 'bg-[#F0E4D3] text-[#78665B] border border-[#E4D3BE]'
-                        }`}
-                    >
-                      {item.step}
-                    </div>
-                    <span className="text-2xl">{item.icon}</span>
-                  </div>
-
-                  <span className="text-[11px] font-bold text-[#E3A08A] uppercase tracking-wider block mb-1">
-                    {item.badge}
-                  </span>
-                  <h3 className="text-xl font-bold text-[#3A2E27] mb-2 font-sans">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-[#78665B] leading-relaxed mb-3">
-                    {item.desc}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-[#E4D3BE]/60 text-[11px] text-[#3A2E27] font-medium bg-[#FAF3E8]/60 p-2.5 rounded-xl">
-                  💡 {item.detail}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 3. FEATURE SHOWCASE GRID (2x2 with Staggered Cascades) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#9CAF88] block mb-1">
-            Built for Study & Life
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#3A2E27] tracking-tight">
-            Features Crafted for Deep Focus
-          </h2>
-          <p className="mt-2 text-sm text-[#78665B]">
-            Every system works harmoniously to keep you inspired, mindful, and consistent.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Feature Card 1: Quest Log */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-7 shadow-[0_4px_16px_rgba(58,46,39,0.06),0_12px_28px_rgba(58,46,39,0.08)] hover:-translate-y-1.5 transition-all duration-300 relative group overflow-hidden"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#E3A08A]/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-              📜
-            </div>
-            <h3 className="text-xl font-bold text-[#3A2E27] mb-2 font-sans">
-              Sticky-Note Quest Log
-            </h3>
-            <p className="text-xs text-[#78665B] leading-relaxed mb-4">
-              Capture tasks in a warm journal layout. Tag quests with Intellect, Vitality, Discipline, or Creativity.
-              Supports recurring daily habit tracking with instant optimistic UI updates.
-            </p>
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-[#8F4E38]">
-              <CheckCircle2 className="w-4 h-4 text-[#E3A08A]" />
-              <span>Zero client math cheating — server-calculated rewards</span>
-            </div>
-          </motion.div>
-
-          {/* Feature Card 2: Skill Meters */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-7 shadow-[0_4px_16px_rgba(58,46,39,0.06),0_12px_28px_rgba(58,46,39,0.08)] hover:-translate-y-1.5 transition-all duration-300 relative group overflow-hidden"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#9CAF88]/25 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-              📊
-            </div>
-            <h3 className="text-xl font-bold text-[#3A2E27] mb-2 font-sans">
-              4 RPG Skill Meters
-            </h3>
-            <p className="text-xs text-[#78665B] leading-relaxed mb-4">
-              Track multi-dimensional growth. Coding and reading build <strong>Intellect</strong>, workouts fuel <strong>Vitality</strong>, daily routines fortify <strong>Discipline</strong>, and art cultivates <strong>Creativity</strong>.
-            </p>
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-[#4D6339]">
-              <Heart className="w-4 h-4 text-[#9CAF88]" />
-              <span>Balanced lifestyle progression without burnout</span>
-            </div>
-          </motion.div>
-
-          {/* Feature Card 3: Streaks */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-7 shadow-[0_4px_16px_rgba(58,46,39,0.06),0_12px_28px_rgba(58,46,39,0.08)] hover:-translate-y-1.5 transition-all duration-300 relative group overflow-hidden"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#F4C572]/25 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-              🔥
-            </div>
-            <h3 className="text-xl font-bold text-[#3A2E27] mb-2 font-sans">
-              Gentle Calendar Streaks
-            </h3>
-            <p className="text-xs text-[#78665B] leading-relaxed mb-4">
-              Celebrate consistency without punitive dread. Track consecutive calendar study days and unlock bonus Cozy Coins and XP at 3, 7, 14, and 30-day milestones.
-            </p>
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-[#855D16]">
-              <Flame className="w-4 h-4 text-[#F4C572]" />
-              <span>Milestone bonuses with cheerful animations</span>
-            </div>
-          </motion.div>
-
-          {/* Feature Card 4: Cozy Shop */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-7 shadow-[0_4px_16px_rgba(58,46,39,0.06),0_12px_28px_rgba(58,46,39,0.08)] hover:-translate-y-1.5 transition-all duration-300 relative group overflow-hidden"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#B9A6D9]/25 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-              🪴
-            </div>
-            <h3 className="text-xl font-bold text-[#3A2E27] mb-2 font-sans">
-              The Cozy Corner Shop
-            </h3>
-            <p className="text-xs text-[#78665B] leading-relaxed mb-4">
-              Spend coins earned through genuine productivity. Unlock 21+ room decorations including lush monstera plants, retro lava lamps, woven jute rugs, and warm tea mugs.
-            </p>
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-[#6B568E]">
-              <Store className="w-4 h-4 text-[#B9A6D9]" />
-              <span>Items physically render in your study room scene</span>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 4. SOCIAL PROOF & STATS STRIP (Animated Count-Ups) */}
-      <section className="w-full bg-gradient-to-r from-[#F0E4D3] via-[#E8D9C5] to-[#F0E4D3] border-y border-[#E4D3BE] py-12 shadow-inner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-[#E4D3BE]/80">
-            <AnimatedCounter target={14800} suffix="+" label="Quests Completed 📜" />
-            <AnimatedCounter target={3400} suffix="+" label="Cozy Rooms Furnished 🪴" />
-            <AnimatedCounter target={94} suffix="%" label="Habit Consistency 🔥" />
-            <AnimatedCounter target={82500} suffix="+" label="Cozy Coins Earned 🪙" />
-          </div>
-        </div>
-      </section>
-
-      {/* 5. LIVE SKILL METER PREVIEW WIDGET */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-6 sm:p-10 shadow-[0_8px_30px_rgba(58,46,39,0.08)] flex flex-col md:flex-row items-center gap-8">
-          {/* Left Column: Explainer & Interactive Button */}
-          <div className="flex-1 text-left space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF3E8] border border-[#E4D3BE] text-xs font-bold text-[#3A2E27]">
-              <span>🎮</span>
-              <span>Interactive Simulator</span>
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#3A2E27] tracking-tight">
-              Watch your skills level up in real-time
-            </h2>
-
-            <p className="text-xs sm:text-sm text-[#78665B] leading-relaxed">
-              Every quest grants Focus Points to its corresponding skill. Click below to simulate completing a study session and see your skill meters respond live!
-            </p>
-
-            <div className="pt-2">
-              <Button
-                onClick={simulateQuestCompletion}
-                variant="primary"
-                size="md"
-                className="font-bold shadow-md active:scale-95"
-              >
-                <Sparkles className="w-4 h-4 mr-1.5" />
-                Simulate Quest Completion (+15 FP)
-              </Button>
-              {simulatedCount > 0 && (
-                <span className="block text-[11px] font-handwritten text-[#E3A08A] font-bold mt-2">
-                  ✨ Completed {simulatedCount} quest{simulatedCount > 1 ? 's' : ''}! Leveling up your stats...
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: The 4 Live Animated Skill Bars */}
-          <div className="flex-1 w-full space-y-4 bg-[#FAF3E8] border border-[#E4D3BE] p-6 rounded-2xl shadow-xs">
-            {/* Intellect */}
-            <div>
-              <div className="flex justify-between text-xs font-bold text-[#6B568E] mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5" /> Intellect
-                </span>
-                <span>{skillProgress.intellect}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#F0E4D3] rounded-full overflow-hidden border border-[#E4D3BE]">
-                <div
-                  className="h-full bg-gradient-to-r from-[#B9A6D9] to-[#A28DC7] rounded-full transition-all duration-500 relative"
-                  style={{ width: `${skillProgress.intellect}%` }}
-                >
-                  <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/70 rounded-full blur-[1px]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Vitality */}
-            <div>
-              <div className="flex justify-between text-xs font-bold text-[#4D6339] mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <Heart className="w-3.5 h-3.5" /> Vitality
-                </span>
-                <span>{skillProgress.vitality}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#F0E4D3] rounded-full overflow-hidden border border-[#E4D3BE]">
-                <div
-                  className="h-full bg-gradient-to-r from-[#9CAF88] to-[#809869] rounded-full transition-all duration-500 relative"
-                  style={{ width: `${skillProgress.vitality}%` }}
-                >
-                  <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/70 rounded-full blur-[1px]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Discipline */}
-            <div>
-              <div className="flex justify-between text-xs font-bold text-[#8F4E38] mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5" /> Discipline
-                </span>
-                <span>{skillProgress.discipline}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#F0E4D3] rounded-full overflow-hidden border border-[#E4D3BE]">
-                <div
-                  className="h-full bg-gradient-to-r from-[#E3A08A] to-[#D58C74] rounded-full transition-all duration-500 relative"
-                  style={{ width: `${skillProgress.discipline}%` }}
-                >
-                  <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/70 rounded-full blur-[1px]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Creativity */}
-            <div>
-              <div className="flex justify-between text-xs font-bold text-[#855D16] mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> Creativity
-                </span>
-                <span>{skillProgress.creativity}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#F0E4D3] rounded-full overflow-hidden border border-[#E4D3BE]">
-                <div
-                  className="h-full bg-gradient-to-r from-[#F4C572] to-[#E3A08A] rounded-full transition-all duration-500 relative"
-                  style={{ width: `${skillProgress.creativity}%` }}
-                >
-                  <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/70 rounded-full blur-[1px]" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. FINAL FULL-BLEED CTA BAND WITH DECORATIVE ACCENTS */}
-      <section className="max-w-5xl mx-auto px-4 w-full">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="bg-gradient-to-br from-[#F0E4D3] via-[#E8D9C5] to-[#DFCCB4] border border-[#E3A08A]/50 rounded-3xl p-8 sm:p-14 text-center relative overflow-hidden shadow-[0_16px_40px_rgba(58,46,39,0.12)]"
-        >
-          {/* Decorative corner illustrations */}
-          <div className="absolute -bottom-6 -left-6 text-7xl opacity-20 pointer-events-none select-none">
-            🪴
-          </div>
-          <div className="absolute -top-6 -right-6 text-7xl opacity-20 pointer-events-none select-none">
-            🕯️
-          </div>
-
-          <div className="relative z-10 max-w-xl mx-auto flex flex-col items-center">
-            <span className="text-4xl mb-3 animate-bounce">☕</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#3A2E27] tracking-tight">
-              Ready to start your cozy quest?
-            </h2>
-            <p className="mt-3 text-sm text-[#78665B] mb-8 leading-relaxed">
-              Step inside your personal study room. Start with Level 1, 60 complimentary Cozy Coins, and claim your quiet sanctuary today.
-            </p>
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto mb-10">
             <Link to="/register">
-              <Button
-                size="lg"
-                variant="primary"
-                className="font-bold text-base px-9 py-4 shadow-[0_6px_25px_rgba(227,160,138,0.4)] hover:shadow-[0_8px_30px_rgba(227,160,138,0.5)] transition-all"
-              >
-                Claim Your Study Nook Now <ArrowRight className="w-4 h-4 ml-2" />
+              <Button size="lg" variant="primary" className="text-base font-black px-8 py-4">
+                BEGIN QUEST →
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button size="lg" variant="secondary" className="text-base font-black px-8 py-4">
+                LOG IN
               </Button>
             </Link>
           </div>
-        </motion.div>
+
+          {/* Meta Row */}
+          <div className="w-full border-t-2 border-[#141414] pt-4 flex flex-wrap items-center gap-4 text-xs font-heading font-black uppercase tracking-wider text-[#141414]/70">
+            <span>FREE TO PLAY</span>
+            <span className="text-[#E8402C]">•</span>
+            <span>REAL PROGRESS</span>
+            <span className="text-[#E8402C]">•</span>
+            <span>NO FLUFF</span>
+            <span className="text-[#E8402C]">•</span>
+            <span>ZERO CLIENT CHEATING</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 3. INTERACTIVE PROGRESSION PIPELINE (HERO FEATURE) */}
+      {/* ------------------------------------------------------------- */}
+      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          {/* Section Heading & Autoplay Toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-[#E8402C] text-[#F5F3EF] px-2 py-0.5 text-[11px] font-heading font-black">
+                  FEATURE 01
+                </span>
+                <span className="font-heading font-black text-xs uppercase tracking-widest text-[#141414]/60">
+                  WORKFLOW ENGINE
+                </span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight uppercase">
+                THE PROGRESSION PIPELINE
+              </h2>
+            </div>
+
+            <button
+              onClick={() => setIsAutoplay(!isAutoplay)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#F5F3EF] border-2 border-[#141414] font-heading font-black text-xs uppercase tracking-wider shadow-brutal-sm hover:bg-[#141414] hover:text-[#F5F3EF] transition-all cursor-pointer self-start sm:self-auto"
+            >
+              {isAutoplay ? (
+                <>
+                  <Pause className="w-3.5 h-3.5" />
+                  <span>PAUSE PIPELINE</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>AUTOPLAY PIPELINE</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Horizontal Stepped Tracker (5 Stages) */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 border-2 border-[#141414] bg-[#F5F3EF] mb-8 shadow-brutal">
+            {pipelineStages.map((stage) => {
+              const isActive = pipelineStage === stage.id;
+              const isPast = pipelineStage > stage.id;
+
+              return (
+                <button
+                  key={stage.id}
+                  onClick={() => {
+                    setPipelineStage(stage.id);
+                    setIsAutoplay(false);
+                  }}
+                  className={`p-4 text-left border-r-2 border-b-2 sm:border-b-0 border-[#141414] last:border-r-0 transition-all cursor-pointer relative ${
+                    isActive
+                      ? 'bg-[#141414] text-[#F5F3EF]'
+                      : isPast
+                      ? 'bg-[#F5F3EF] text-[#141414] hover:bg-[#EBE7DF]'
+                      : 'bg-white text-[#141414]/70 hover:bg-[#F5F3EF]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span
+                      className={`text-lg font-heading font-black tracking-tighter ${
+                        isActive ? 'text-[#E8402C]' : ''
+                      }`}
+                    >
+                      {stage.number}
+                    </span>
+                    <span
+                      className={`text-[9px] font-heading font-extrabold uppercase px-1.5 py-0.5 border ${
+                        isActive
+                          ? 'border-[#F5F3EF] bg-[#141414]'
+                          : 'border-[#141414] bg-white text-[#141414]'
+                      }`}
+                    >
+                      {stage.short}
+                    </span>
+                  </div>
+                  <div className="font-heading font-black text-xs uppercase tracking-tight line-clamp-1">
+                    {stage.label}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Live Pipeline Execution Display Panel */}
+          <div className="border-3 border-[#141414] bg-[#F5F3EF] p-6 sm:p-8 shadow-brutal-lg">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b-2 border-[#141414]">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-5 h-5 text-[#E8402C]" />
+                <span className="font-heading font-black text-sm uppercase tracking-wider">
+                  PIPELINE STATE MONITOR — STAGE {activeStageData.number}
+                </span>
+              </div>
+              <span className="text-xs font-heading font-bold bg-[#F2B705] text-[#141414] px-2 py-0.5 border border-[#141414]">
+                STAGE: {activeStageData.label}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Input Card */}
+              <div className="bg-white border-2 border-[#141414] p-5 shadow-brutal-sm">
+                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#141414]/20">
+                  <span className="text-[10px] font-heading font-black uppercase text-[#141414]/60">
+                    [01] {activeStageData.inputLabel}
+                  </span>
+                  <span className={`text-[10px] font-heading font-black px-1.5 ${activeStageData.inputContent.categoryColor}`}>
+                    {activeStageData.inputContent.category}
+                  </span>
+                </div>
+                <h4 className="font-heading font-bold text-sm text-[#141414] mb-3 uppercase">
+                  {activeStageData.inputContent.title}
+                </h4>
+                <span className="inline-block text-[10px] font-heading font-black px-2 py-1 bg-[#141414] text-[#F5F3EF]">
+                  STATUS: {activeStageData.inputContent.status}
+                </span>
+              </div>
+
+              {/* Transformation Card */}
+              <div className="bg-white border-2 border-[#141414] p-5 shadow-brutal-sm">
+                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#141414]/20">
+                  <span className="text-[10px] font-heading font-black uppercase text-[#141414]/60">
+                    [02] {activeStageData.transformLabel}
+                  </span>
+                  <Zap className="w-3.5 h-3.5 text-[#E8402C]" />
+                </div>
+                <p className="text-xs font-sans text-[#141414] leading-relaxed mb-3">
+                  {activeStageData.transformContent}
+                </p>
+                <div className="text-[10px] font-heading font-black text-[#2B4AE8] uppercase">
+                  ✓ FORMULA VERIFIED VIA ODM
+                </div>
+              </div>
+
+              {/* Output Card */}
+              <div className="bg-[#141414] text-[#F5F3EF] border-2 border-[#141414] p-5 shadow-brutal-red">
+                <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#F5F3EF]/20">
+                  <span className="text-[10px] font-heading font-black uppercase text-[#F2B705]">
+                    [03] {activeStageData.outputLabel}
+                  </span>
+                  <Sparkles className="w-3.5 h-3.5 text-[#F2B705]" />
+                </div>
+                <div className="space-y-1.5 font-heading font-black text-xs uppercase">
+                  <div className="text-[#E8402C]">{activeStageData.outputContent.xp}</div>
+                  <div className="text-[#F2B705]">{activeStageData.outputContent.gold}</div>
+                  <div className="text-[#F5F3EF]">{activeStageData.outputContent.stat}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 4. SKILL SYSTEM — "MENTAL MODEL" CARDS GRID */}
+      {/* ------------------------------------------------------------- */}
+      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#F5F3EF]">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-10">
+            <span className="bg-[#2B4AE8] text-[#F5F3EF] px-2 py-0.5 text-[11px] font-heading font-black inline-block mb-1">
+              FEATURE 02
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight uppercase">
+              SKILL SPECIFICATIONS
+            </h2>
+            <p className="text-xs font-heading font-bold text-[#141414]/60 uppercase tracking-wider mt-1">
+              THE 4 VECTOR METERS OF LIFE RPG PROGRESSION
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Intellect Card */}
+            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+              {/* Corner Tag Block */}
+              <div className="absolute top-0 left-0 w-8 h-8 bg-[#2B4AE8] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#F5F3EF] text-xs font-black">
+                01
+              </div>
+              <div className="pt-5">
+                <span className="text-[10px] font-heading font-black text-[#2B4AE8] uppercase tracking-wider block mb-1">
+                  VECTOR 01
+                </span>
+                <h3 className="text-2xl font-heading font-black text-[#141414] mb-2 uppercase">
+                  INTELLECT
+                </h3>
+                <p className="text-xs font-sans text-[#141414]/80 leading-relaxed mb-6">
+                  Leveled by high-leverage cognitive output: algorithms, papers read, documentation mastered, and complex logic solved.
+                </p>
+
+                {/* Hard Bordered Stat Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] font-heading font-black uppercase">
+                    <span>CAPACITY</span>
+                    <span>88%</span>
+                  </div>
+                  <div className="w-full h-4 bg-[#F5F3EF] border-2 border-[#141414] p-0.5">
+                    <div className="h-full bg-[#2B4AE8]" style={{ width: '88%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vitality Card */}
+            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+              <div className="absolute top-0 left-0 w-8 h-8 bg-[#E8402C] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#F5F3EF] text-xs font-black">
+                02
+              </div>
+              <div className="pt-5">
+                <span className="text-[10px] font-heading font-black text-[#E8402C] uppercase tracking-wider block mb-1">
+                  VECTOR 02
+                </span>
+                <h3 className="text-2xl font-heading font-black text-[#141414] mb-2 uppercase">
+                  VITALITY
+                </h3>
+                <p className="text-xs font-sans text-[#141414]/80 leading-relaxed mb-6">
+                  Leveled by physiological resilience: heavy lifts, aerobic runs, strict hydration protocols, and deliberate sleep hours.
+                </p>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] font-heading font-black uppercase">
+                    <span>CAPACITY</span>
+                    <span>74%</span>
+                  </div>
+                  <div className="w-full h-4 bg-[#F5F3EF] border-2 border-[#141414] p-0.5">
+                    <div className="h-full bg-[#E8402C]" style={{ width: '74%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Discipline Card */}
+            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+              <div className="absolute top-0 left-0 w-8 h-8 bg-[#141414] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#F5F3EF] text-xs font-black">
+                03
+              </div>
+              <div className="pt-5">
+                <span className="text-[10px] font-heading font-black text-[#141414] uppercase tracking-wider block mb-1">
+                  VECTOR 03
+                </span>
+                <h3 className="text-2xl font-heading font-black text-[#141414] mb-2 uppercase">
+                  DISCIPLINE
+                </h3>
+                <p className="text-xs font-sans text-[#141414]/80 leading-relaxed mb-6">
+                  Leveled by temporal adherence: unbroken study streaks, early morning protocols, clean workspace maintenance.
+                </p>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] font-heading font-black uppercase">
+                    <span>CAPACITY</span>
+                    <span>92%</span>
+                  </div>
+                  <div className="w-full h-4 bg-[#F5F3EF] border-2 border-[#141414] p-0.5">
+                    <div className="h-full bg-[#141414]" style={{ width: '92%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Creativity Card */}
+            <div className="bg-white border-2 border-[#141414] p-6 shadow-brutal relative group hover:-translate-y-1 transition-transform">
+              <div className="absolute top-0 left-0 w-8 h-8 bg-[#F2B705] border-r-2 border-b-2 border-[#141414] flex items-center justify-center text-[#141414] text-xs font-black">
+                04
+              </div>
+              <div className="pt-5">
+                <span className="text-[10px] font-heading font-black text-[#F2B705] uppercase tracking-wider block mb-1">
+                  VECTOR 04
+                </span>
+                <h3 className="text-2xl font-heading font-black text-[#141414] mb-2 uppercase">
+                  CREATIVITY
+                </h3>
+                <p className="text-xs font-sans text-[#141414]/80 leading-relaxed mb-6">
+                  Leveled by generative production: UI architecture, creative writing, musical composition, and open-source contributions.
+                </p>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] font-heading font-black uppercase">
+                    <span>CAPACITY</span>
+                    <span>68%</span>
+                  </div>
+                  <div className="w-full h-4 bg-[#F5F3EF] border-2 border-[#141414] p-0.5">
+                    <div className="h-full bg-[#F2B705]" style={{ width: '68%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 5. STATS STRIP (SOLID ACCENT BAND WITH OVERSIZED NUMERALS) */}
+      {/* ------------------------------------------------------------- */}
+      <section className="border-b-3 border-[#141414] bg-[#E8402C] text-[#F5F3EF] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#141414]">
+            <div className="pt-4 md:pt-0 md:px-6">
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight">
+                14,800+
+              </div>
+              <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
+                QUESTS COMPLETED
+              </div>
+            </div>
+
+            <div className="pt-4 md:pt-0 md:px-6">
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight text-[#F2B705]">
+                3,400+
+              </div>
+              <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
+                PLAYERS LEVELED UP
+              </div>
+            </div>
+
+            <div className="pt-4 md:pt-0 md:px-6">
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight">
+                94%
+              </div>
+              <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
+                PROTOCOL ADHERENCE
+              </div>
+            </div>
+
+            <div className="pt-4 md:pt-0 md:px-6">
+              <div className="text-4xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight text-[#F2B705]">
+                85,000+
+              </div>
+              <div className="text-xs font-heading font-extrabold uppercase tracking-widest text-[#F5F3EF]/90 mt-1">
+                GOLD DISTRIBUTED
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 6. THE VAULT (SHOP PREVIEW) */}
+      {/* ------------------------------------------------------------- */}
+      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <span className="bg-[#F2B705] text-[#141414] px-2 py-0.5 text-[11px] font-heading font-black inline-block mb-1">
+                FEATURE 03
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-heading font-black tracking-tight uppercase">
+                THE VAULT
+              </h2>
+              <p className="text-xs font-heading font-bold text-[#141414]/60 uppercase tracking-wider mt-1">
+                CONVERT REAL OUTPUT INTO COMMAND DECK FURNISHINGS
+              </p>
+            </div>
+
+            <Link to="/register">
+              <Button variant="secondary" size="md" className="font-black">
+                ENTER THE VAULT →
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {vaultPreviewItems.map((item, idx) => (
+              <div
+                key={idx}
+                className={`bg-[#F5F3EF] border-2 ${item.accent} p-5 shadow-brutal relative flex flex-col justify-between`}
+              >
+                {/* Diagonal Striped Overlay for Locked Items */}
+                {item.isLocked && (
+                  <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-10 p-4 text-center">
+                    <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3 py-1.5 text-xs font-heading font-black uppercase shadow-brutal-sm flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>UNLOCKS AT LV. {item.unlockLevel}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-heading font-black uppercase px-2 py-0.5 bg-[#141414] text-[#F5F3EF]">
+                      {item.category}
+                    </span>
+                    <span className="text-[11px] font-heading font-black uppercase text-[#141414]/60">
+                      LV. {item.unlockLevel}
+                    </span>
+                  </div>
+
+                  {/* Gear Placeholder Art Block */}
+                  <div className="w-full h-28 bg-white border-2 border-[#141414] flex items-center justify-center font-heading font-black text-3xl mb-4">
+                    {idx === 0 ? '🖥️' : idx === 1 ? '🪴' : idx === 2 ? '🖼️' : '💡'}
+                  </div>
+
+                  <h4 className="font-heading font-black text-sm text-[#141414] mb-3 uppercase leading-tight">
+                    {item.name}
+                  </h4>
+                </div>
+
+                {/* Price Tag Badge */}
+                <div className="flex items-center justify-between pt-3 border-t-2 border-[#141414]">
+                  <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-2.5 py-1 text-xs font-heading font-black uppercase">
+                    {item.cost} GOLD
+                  </div>
+                  <span className="text-[11px] font-heading font-bold text-[#141414]/60">
+                    GEAR TIER
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 7. STREAK PROTOCOL CALLOUT (WARNING-STYLE PROTOCOL BOX) */}
+      {/* ------------------------------------------------------------- */}
+      <section className="border-b-3 border-[#141414] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#F5F3EF]">
+        <div className="max-w-5xl mx-auto border-3 border-[#141414] bg-white p-6 sm:p-10 shadow-brutal-lg relative">
+          <div className="flex items-center justify-between pb-4 mb-6 border-b-2 border-[#141414]">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-[#E8402C]"></span>
+              <h3 className="font-heading font-black text-xl text-[#141414] uppercase tracking-tight">
+                STREAK ENGAGEMENT PROTOCOL
+              </h3>
+            </div>
+            <span className="text-xs font-heading font-black bg-[#E8402C] text-[#F5F3EF] px-2 py-0.5">
+              MANDATORY RULES
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+              <span className="text-[10px] font-heading font-black text-[#E8402C] uppercase block mb-1">
+                RULE 01
+              </span>
+              <h4 className="font-heading font-black text-sm uppercase mb-1">
+                CALENDAR DAY SYNCHRONIZATION
+              </h4>
+              <p className="text-xs font-sans text-[#141414]/80 leading-relaxed">
+                Streaks require minimum 1 verified quest completion per calendar day. Completing multiple quests in a single day maintains the streak without duplicate increments.
+              </p>
+            </div>
+
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+              <span className="text-[10px] font-heading font-black text-[#2B4AE8] uppercase block mb-1">
+                RULE 02
+              </span>
+              <h4 className="font-heading font-black text-sm uppercase mb-1">
+                ZERO BACKDATING TOLERANCE
+              </h4>
+              <p className="text-xs font-sans text-[#141414]/80 leading-relaxed">
+                If a day is skipped, streak reset to 1 is enforced automatically by the server-side algorithm. No manual overrides, no excuses.
+              </p>
+            </div>
+
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+              <span className="text-[10px] font-heading font-black text-[#F2B705] uppercase block mb-1">
+                RULE 03
+              </span>
+              <h4 className="font-heading font-black text-sm uppercase mb-1">
+                TIER MILESTONE MULTIPLIERS
+              </h4>
+              <p className="text-xs font-sans text-[#141414]/80 leading-relaxed">
+                Reaching 3, 7, 14, and 30-day milestones triggers exponential bonus XP and Gold disbursements directly into your ledger.
+              </p>
+            </div>
+
+            <div className="border-2 border-[#141414] p-4 bg-[#F5F3EF]">
+              <span className="text-[10px] font-heading font-black text-[#141414] uppercase block mb-1">
+                RULE 04
+              </span>
+              <h4 className="font-heading font-black text-sm uppercase mb-1">
+                CROSS-PLATFORM INTEGRITY
+              </h4>
+              <p className="text-xs font-sans text-[#141414]/80 leading-relaxed">
+                Streak counters are secured with tamper-proof JWT authentication and verified against UTC server clocks on every request.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 8. FINAL FULL-BLEED CTA BAND */}
+      {/* ------------------------------------------------------------- */}
+      <section className="bg-[#141414] text-[#F5F3EF] py-20 sm:py-28 px-4 sm:px-6 lg:px-8 text-center relative">
+        <div className="max-w-4xl mx-auto flex flex-col items-center">
+          <div className="inline-block bg-[#E8402C] text-[#F5F3EF] px-3 py-1 font-heading font-black text-xs uppercase mb-6 tracking-widest">
+            COMMAND DECK WAITING
+          </div>
+
+          <h2 className="text-4xl sm:text-6xl lg:text-7xl font-heading font-black tracking-tighter uppercase leading-[0.95] mb-6">
+            READY TO START YOUR CONSTRUCTIVIST QUEST?
+          </h2>
+
+          <p className="text-base sm:text-lg font-sans text-[#F5F3EF]/70 max-w-xl mb-10">
+            Initialize your profile now. Receive 60 Gold immediately and begin executing verified tasks.
+          </p>
+
+          <Link to="/register">
+            <Button
+              size="lg"
+              variant="primary"
+              className="text-lg font-black px-10 py-5 bg-[#E8402C] text-[#F5F3EF] shadow-brutal-yellow hover:translate-x-0.5 hover:translate-y-0.5"
+            >
+              INITIALIZE AGENT NOW →
+            </Button>
+          </Link>
+        </div>
       </section>
     </div>
   );

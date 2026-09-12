@@ -1,27 +1,26 @@
-import React from 'react';
 import { BookOpen, Heart, Shield, Sparkles } from 'lucide-react';
 
 export const CategoryBadge = ({ category, className = '' }) => {
   const meta = {
     intellect: {
-      label: 'Intellect',
+      label: 'INTELLECT',
       icon: BookOpen,
-      bg: 'bg-[#B9A6D9]/20 text-[#6B568E] border-[#B9A6D9]/50',
+      bg: 'bg-[#2B4AE8] text-[#F5F3EF] border-2 border-[#141414]',
     },
     vitality: {
-      label: 'Vitality',
+      label: 'VITALITY',
       icon: Heart,
-      bg: 'bg-[#9CAF88]/20 text-[#4D6339] border-[#9CAF88]/50',
+      bg: 'bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414]',
     },
     discipline: {
-      label: 'Discipline',
+      label: 'DISCIPLINE',
       icon: Shield,
-      bg: 'bg-[#E3A08A]/20 text-[#8F4E38] border-[#E3A08A]/50',
+      bg: 'bg-[#141414] text-[#F5F3EF] border-2 border-[#141414]',
     },
     creativity: {
-      label: 'Creativity',
+      label: 'CREATIVITY',
       icon: Sparkles,
-      bg: 'bg-[#F4C572]/25 text-[#855D16] border-[#F4C572]/60',
+      bg: 'bg-[#F2B705] text-[#141414] border-2 border-[#141414]',
     },
   };
 
@@ -30,9 +29,9 @@ export const CategoryBadge = ({ category, className = '' }) => {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${current.bg} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-heading font-extrabold uppercase tracking-wider ${current.bg} ${className}`}
     >
-      <Icon className="w-3 h-3" />
+      <Icon className="w-3 h-3 stroke-[2.5]" />
       {current.label}
     </span>
   );

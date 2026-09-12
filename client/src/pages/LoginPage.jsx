@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { LogIn, Sparkles, Coffee } from 'lucide-react';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -19,7 +18,7 @@ export const LoginPage = () => {
     setFormError(null);
 
     if (!email || !password) {
-      setFormError('Please enter both email and password');
+      setFormError('PLEASE SPECIFY BOTH EMAIL AND ACCESS CODE');
       return;
     }
 
@@ -30,39 +29,46 @@ export const LoginPage = () => {
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setFormError(result.message);
+      setFormError(result.message.toUpperCase());
     }
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(58,46,39,0.1)] relative">
-        {/* Top sticker tape decoration */}
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#E3A08A]/40 rounded-sm" />
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-[#FAF3E8] border-3 border-[#141414] shadow-brutal p-6 sm:p-8 relative">
+        {/* Top Identification Header */}
+        <div className="bg-[#141414] text-[#F5F3EF] px-3 py-1.5 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-6 flex items-center justify-between border-b-3 border-[#141414]">
+          <span className="text-[10px] font-mono font-black tracking-widest uppercase">
+            // SECURE CLEARANCE VERIFICATION
+          </span>
+          <span className="text-[10px] font-mono font-bold text-[#F2B705]">
+            SYS_ONLINE
+          </span>
+        </div>
 
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-[#FAF3E8] border border-[#E4D3BE] mx-auto flex items-center justify-center text-2xl mb-3 shadow-sm">
-            ☕
+        <div className="mb-6">
+          <div className="inline-block bg-[#E8402C] text-white text-[10px] font-mono font-black px-2 py-0.5 mb-2 uppercase">
+            AUTHENTICATION PROTOCOL
           </div>
-          <h1 className="text-2xl font-bold text-[#3A2E27] tracking-tight">
-            Welcome Back, Scholar
+          <h1 className="text-3xl font-black text-[#141414] font-space uppercase tracking-tight">
+            COMMAND ACCESS
           </h1>
-          <p className="text-xs text-[#78665B] mt-1 font-sans">
-            Light the study lamp and check today's quest log
+          <p className="text-xs font-mono font-bold text-[#141414]/70 mt-1 uppercase">
+            ENTER CREDENTIALS TO ACCESS OPERATIONAL HUD AND ACTIVE QUESTS.
           </p>
         </div>
 
         {formError && (
-          <div className="mb-4 p-3 bg-red-100/90 border border-red-200 text-red-800 rounded-xl text-xs">
-            {formError}
+          <div className="mb-6 p-3 bg-[#E8402C] border-2 border-[#141414] text-white font-mono text-xs font-bold uppercase shadow-brutal">
+            // ERROR: {formError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input
-            label="Email Address"
+            label="AGENT IDENTIFIER (EMAIL)"
             type="email"
-            placeholder="scholar@lofi.study"
+            placeholder="agent@liferpg.io"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -70,9 +76,9 @@ export const LoginPage = () => {
           />
 
           <Input
-            label="Password"
+            label="ACCESS PASSCODE"
             type="password"
-            placeholder="••••••••"
+            placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -81,22 +87,22 @@ export const LoginPage = () => {
 
           <Button
             type="submit"
-            variant="primary"
+            variant="danger"
             size="lg"
-            className="w-full justify-center text-sm font-bold shadow-md mt-2"
+            className="w-full justify-center font-mono font-black uppercase text-sm mt-4 cursor-pointer"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Entering Study Nook...' : 'Enter Study Nook 🕯️'}
+            {isSubmitting ? 'VERIFYING CREDENTIALS...' : 'AUTHENTICATE & ENTER HQ →'}
           </Button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-[#E4D3BE] text-center text-xs text-[#78665B]">
-          <span>New to Life RPG? </span>
+        <div className="mt-8 pt-4 border-t-2 border-[#141414]/20 flex items-center justify-between text-xs font-mono">
+          <span className="font-bold text-[#141414]/70 uppercase">UNREGISTERED AGENT?</span>
           <Link
             to="/register"
-            className="font-bold text-[#3A2E27] hover:text-[#E3A08A] underline decoration-1 underline-offset-2 transition-colors"
+            className="font-black text-[#141414] hover:text-[#E8402C] uppercase underline decoration-2 underline-offset-4"
           >
-            Claim your room here
+            INITIALIZE AGENT →
           </Link>
         </div>
       </div>

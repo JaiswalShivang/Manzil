@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { Sparkles, ArrowRight } from 'lucide-react';
 
 export const RegisterPage = () => {
   const [username, setUsername] = useState('');
@@ -20,17 +19,17 @@ export const RegisterPage = () => {
     setFormError(null);
 
     if (!username || !email || !password) {
-      setFormError('Please fill in all fields');
+      setFormError('ALL PARAMETERS REQUIRED FOR COMMISSIONING');
       return;
     }
 
     if (username.length < 3) {
-      setFormError('Username must be at least 3 characters');
+      setFormError('CODENAME MUST CONTAIN AT LEAST 3 CHARACTERS');
       return;
     }
 
     if (password.length < 6) {
-      setFormError('Password must be at least 6 characters');
+      setFormError('PASSCODE REQUIRES A MINIMUM OF 6 CHARACTERS');
       return;
     }
 
@@ -41,39 +40,46 @@ export const RegisterPage = () => {
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setFormError(result.message);
+      setFormError(result.message.toUpperCase());
     }
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md bg-[#F0E4D3] border border-[#E4D3BE] rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(58,46,39,0.1)] relative">
-        {/* Top sticker tape decoration */}
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#9CAF88]/45 rounded-sm" />
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-[#FAF3E8] border-3 border-[#141414] shadow-brutal p-6 sm:p-8 relative">
+        {/* Top Identification Header */}
+        <div className="bg-[#141414] text-[#F5F3EF] px-3 py-1.5 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-6 flex items-center justify-between border-b-3 border-[#141414]">
+          <span className="text-[10px] font-mono font-black tracking-widest uppercase">
+            // NEW AGENT RECRUITMENT PROTOCOL
+          </span>
+          <span className="text-[10px] font-mono font-bold text-[#2B4AE8]">
+            ENLISTMENT
+          </span>
+        </div>
 
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-[#FAF3E8] border border-[#E4D3BE] mx-auto flex items-center justify-center text-2xl mb-3 shadow-sm">
-            🪴
+        <div className="mb-6">
+          <div className="inline-block bg-[#2B4AE8] text-white text-[10px] font-mono font-black px-2 py-0.5 mb-2 uppercase">
+            INITIALIZE RECORD
           </div>
-          <h1 className="text-2xl font-bold text-[#3A2E27] tracking-tight">
-            Claim Your Study Nook
+          <h1 className="text-3xl font-black text-[#141414] font-space uppercase tracking-tight">
+            COMMISSION AGENT
           </h1>
-          <p className="text-xs text-[#78665B] mt-1 font-sans">
-            Start with Level 1, 60 Cozy Coins, and a warm desk waiting for you
+          <p className="text-xs font-mono font-bold text-[#141414]/70 mt-1 uppercase">
+            INITIALIZE AT LEVEL 01. ALLOCATES 60 INITIAL GOLD REQUISITION CREDITS.
           </p>
         </div>
 
         {formError && (
-          <div className="mb-4 p-3 bg-red-100/90 border border-red-200 text-red-800 rounded-xl text-xs">
-            {formError}
+          <div className="mb-6 p-3 bg-[#E8402C] border-2 border-[#141414] text-white font-mono text-xs font-bold uppercase shadow-brutal">
+            // ERROR: {formError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input
-            label="Adventurer Username"
+            label="OPERATIONAL CODENAME (USERNAME)"
             type="text"
-            placeholder="e.g. CozyScholar"
+            placeholder="CODENAME_01"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -81,9 +87,9 @@ export const RegisterPage = () => {
           />
 
           <Input
-            label="Email Address"
+            label="COMMUNICATION CHANNEL (EMAIL)"
             type="email"
-            placeholder="scholar@lofi.study"
+            placeholder="agent@liferpg.io"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -91,9 +97,9 @@ export const RegisterPage = () => {
           />
 
           <Input
-            label="Password"
+            label="SECURITY PASSCODE (MIN 6 CHARS)"
             type="password"
-            placeholder="At least 6 characters"
+            placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -104,20 +110,20 @@ export const RegisterPage = () => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full justify-center text-sm font-bold shadow-md mt-2"
+            className="w-full justify-center font-mono font-black uppercase text-sm mt-4 cursor-pointer"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Unlocking Your Room...' : 'Start My Study Journey ✍️'}
+            {isSubmitting ? 'COMMISSIONING AGENT...' : 'INITIALIZE PROFILE & LAUNCH →'}
           </Button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-[#E4D3BE] text-center text-xs text-[#78665B]">
-          <span>Already have a room? </span>
+        <div className="mt-8 pt-4 border-t-2 border-[#141414]/20 flex items-center justify-between text-xs font-mono">
+          <span className="font-bold text-[#141414]/70 uppercase">EXISTING CLEARANCE?</span>
           <Link
             to="/login"
-            className="font-bold text-[#3A2E27] hover:text-[#E3A08A] underline decoration-1 underline-offset-2 transition-colors"
+            className="font-black text-[#141414] hover:text-[#2B4AE8] uppercase underline decoration-2 underline-offset-4"
           >
-            Log in here
+            COMMAND ACCESS →
           </Link>
         </div>
       </div>

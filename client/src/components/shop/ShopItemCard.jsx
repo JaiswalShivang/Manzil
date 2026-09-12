@@ -1,6 +1,5 @@
-import React from 'react';
 import { Button } from '../ui/Button';
-import { Lock, Coins, Check, Sparkles } from 'lucide-react';
+import { Lock, Coins, Check } from 'lucide-react';
 
 export const ShopItemCard = ({
   item,
@@ -16,90 +15,82 @@ export const ShopItemCard = ({
   const isLevelLocked = userLevel < (item.unlockLevel || 1);
   const canAfford = userCoins >= item.cost;
 
-  // Category specific preview icons/colors
-  const categoryMeta = {
-    plant: { icon: '🪴', color: 'bg-[#9CAF88]/15 border-[#9CAF88]/40 text-[#4D6339]' },
-    lamp: { icon: '💡', color: 'bg-[#F4C572]/20 border-[#F4C572]/50 text-[#855D16]' },
-    poster: { icon: '🖼️', color: 'bg-[#B9A6D9]/20 border-[#B9A6D9]/50 text-[#6B568E]' },
-    rug: { icon: '🧶', color: 'bg-[#E3A08A]/20 border-[#E3A08A]/50 text-[#8F4E38]' },
-    mug: { icon: '☕', color: 'bg-[#D4B996]/30 border-[#D4B996]/60 text-[#5D442E]' },
-    wallpaper: { icon: '🎨', color: 'bg-[#FAF3E8] border-[#E4D3BE] text-[#3A2E27]' },
+  const categoryIcons = {
+    plant: '🪴',
+    lamp: '💡',
+    poster: '🖼️',
+    rug: '🧶',
+    mug: '☕',
+    wallpaper: '🎨',
   };
-
-  const meta = categoryMeta[item.category] || categoryMeta.plant;
 
   return (
     <div
-      className={`group relative rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between ${
+      className={`relative border-2 border-[#141414] p-5 transition-all duration-150 flex flex-col justify-between ${
         isLevelLocked
-          ? 'bg-[#F0E4D3]/40 border-[#E4D3BE]/60 opacity-80'
-          : 'bg-[#F0E4D3] border-[#E4D3BE] shadow-[0_4px_16px_rgba(58,46,39,0.06)] hover:shadow-[0_8px_24px_rgba(58,46,39,0.1)] hover:-translate-y-1'
+          ? 'bg-[#EBE7DF] opacity-90'
+          : 'bg-white shadow-brutal hover:shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5'
       }`}
     >
+      {/* Locked Diagonal Overlay */}
+      {isLevelLocked && (
+        <div className="absolute inset-0 stripes-locked flex flex-col items-center justify-center z-20 p-4 text-center">
+          <div className="bg-[#E8402C] text-[#F5F3EF] border-2 border-[#141414] px-3 py-1.5 text-xs font-heading font-black uppercase shadow-brutal-sm flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>UNLOCKS AT LV. {item.unlockLevel}</span>
+          </div>
+        </div>
+      )}
+
       <div>
-        {/* Category & Unlock Level pill */}
+        {/* Category & Level tag */}
         <div className="flex items-center justify-between gap-2 mb-3">
-          <span
-            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border capitalize ${meta.color}`}
-          >
+          <span className="text-[10px] font-heading font-black uppercase px-2 py-0.5 bg-[#141414] text-[#F5F3EF]">
             {item.category}
           </span>
 
           {item.unlockLevel > 1 && (
-            <span
-              className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                isLevelLocked
-                  ? 'bg-red-100 text-red-700 border border-red-200'
-                  : 'bg-[#FAF3E8] text-[#78665B] border border-[#E4D3BE]'
-              }`}
-            >
-              {isLevelLocked && <Lock className="w-3 h-3" />}
-              Lv. {item.unlockLevel}
+            <span className="text-[10px] font-heading font-black uppercase px-2 py-0.5 border border-[#141414] bg-[#F5F3EF] text-[#141414]">
+              TIER LV. {item.unlockLevel}
             </span>
           )}
         </div>
 
-        {/* Visual Preview Box */}
-        <div className="w-full h-32 bg-[#FAF3E8] rounded-xl border border-[#E4D3BE] flex flex-col items-center justify-center mb-4 relative overflow-hidden group-hover:scale-[1.02] transition-transform">
-          <span className="text-4xl filter drop-shadow-sm">{meta.icon}</span>
-          <span className="text-[10px] text-[#78665B] font-mono mt-1 opacity-75">
+        {/* Gear Artwork Display Box */}
+        <div className="w-full h-32 bg-[#F5F3EF] border-2 border-[#141414] flex flex-col items-center justify-center mb-4 relative overflow-hidden">
+          <span className="text-4xl select-none">{categoryIcons[item.category] || '📦'}</span>
+          <span className="text-[10px] font-mono uppercase text-[#141414]/60 mt-1">
             {item.imageKey}
           </span>
-
-          {isLevelLocked && (
-            <div className="absolute inset-0 bg-[#3A2E27]/40 backdrop-blur-[2px] flex flex-col items-center justify-center text-white p-2 text-center">
-              <Lock className="w-6 h-6 mb-1 text-[#F4C572]" />
-              <span className="text-xs font-bold">Unlocks at Level {item.unlockLevel}</span>
-            </div>
-          )}
         </div>
 
         {/* Name & Description */}
-        <h4 className="text-base font-bold text-[#3A2E27] mb-1 font-sans">{item.name}</h4>
-        <p className="text-xs text-[#78665B] leading-relaxed mb-4 line-clamp-2">
+        <h4 className="text-sm font-heading font-black text-[#141414] mb-1 uppercase tracking-tight leading-snug">
+          {item.name}
+        </h4>
+        <p className="text-xs font-sans text-[#141414]/80 leading-relaxed mb-4 line-clamp-2">
           {item.description}
         </p>
       </div>
 
-      {/* Footer Action */}
-      <div className="pt-3 border-t border-[#E4D3BE] flex items-center justify-between gap-2 mt-auto">
-        <div className="flex items-center gap-1 font-bold text-sm text-[#855D16]">
-          <Coins className="w-4 h-4 text-[#F4C572]" />
-          <span>{item.cost}</span>
-          <span className="text-[11px] font-normal text-[#78665B]">Coins</span>
+      {/* Footer Price & Action */}
+      <div className="pt-3 border-t-2 border-[#141414] flex items-center justify-between gap-2 mt-auto">
+        <div className="bg-[#F2B705] text-[#141414] border-2 border-[#141414] px-2.5 py-1 text-xs font-heading font-black uppercase flex items-center gap-1">
+          <Coins className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>{item.cost} GOLD</span>
         </div>
 
         <div>
           {isOwned ? (
             isEquipped ? (
               <Button
-                variant="sage"
+                variant="ink"
                 size="sm"
                 onClick={() => onUnequip(item._id)}
                 disabled={isProcessing}
                 className="text-xs"
               >
-                <Check className="w-3.5 h-3.5" /> Equipped
+                <Check className="w-3 h-3 stroke-[3]" /> EQUIPPED
               </Button>
             ) : (
               <Button
@@ -107,9 +98,9 @@ export const ShopItemCard = ({
                 size="sm"
                 onClick={() => onEquip(item._id)}
                 disabled={isProcessing}
-                className="text-xs font-semibold"
+                className="text-xs font-black"
               >
-                Equip 🪄
+                DEPLOY ⚡
               </Button>
             )
           ) : (
@@ -118,17 +109,14 @@ export const ShopItemCard = ({
               size="sm"
               onClick={() => onPurchase(item._id)}
               disabled={isLevelLocked || !canAfford || isProcessing}
-              className="text-xs"
-              title={!canAfford ? 'Not enough coins' : undefined}
+              className="text-xs font-black"
             >
               {isLevelLocked ? (
-                'Locked'
+                'LOCKED'
               ) : !canAfford ? (
-                'Need Coins'
+                'NEED GOLD'
               ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" /> Buy
-                </>
+                'PURCHASE →'
               )}
             </Button>
           )}

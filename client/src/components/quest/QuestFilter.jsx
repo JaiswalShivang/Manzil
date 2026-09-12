@@ -1,4 +1,3 @@
-import React from 'react';
 import { BookOpen, Heart, Shield, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 
 export const QuestFilter = ({
@@ -10,52 +9,52 @@ export const QuestFilter = ({
   totalCompleted = 0,
 }) => {
   const categories = [
-    { id: '', label: 'All Skills' },
-    { id: 'intellect', label: 'Intellect', icon: BookOpen },
-    { id: 'vitality', label: 'Vitality', icon: Heart },
-    { id: 'discipline', label: 'Discipline', icon: Shield },
-    { id: 'creativity', label: 'Creativity', icon: Sparkles },
+    { id: '', label: 'ALL VECTORS' },
+    { id: 'intellect', label: 'INTELLECT', icon: BookOpen },
+    { id: 'vitality', label: 'VITALITY', icon: Heart },
+    { id: 'discipline', label: 'DISCIPLINE', icon: Shield },
+    { id: 'creativity', label: 'CREATIVITY', icon: Sparkles },
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F0E4D3] p-3 rounded-2xl border border-[#E4D3BE]">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 border-2 border-[#141414] shadow-brutal-sm">
       {/* Status Segmented Buttons */}
-      <div className="flex items-center gap-1 bg-[#FAF3E8] p-1 rounded-xl border border-[#E4D3BE]">
+      <div className="flex items-center gap-0 border-2 border-[#141414] bg-[#F5F3EF]">
         <button
           onClick={() => setStatusFilter('')}
-          className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+          className={`px-3 py-1 text-xs font-heading font-black uppercase transition-all cursor-pointer border-r-2 border-[#141414] ${
             statusFilter === ''
-              ? 'bg-[#E3A08A] text-[#3A2E27] shadow-sm'
-              : 'text-[#78665B] hover:text-[#3A2E27]'
+              ? 'bg-[#141414] text-[#F5F3EF]'
+              : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
           }`}
         >
-          All
+          ALL
         </button>
         <button
           onClick={() => setStatusFilter('pending')}
-          className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+          className={`flex items-center gap-1 px-3 py-1 text-xs font-heading font-black uppercase transition-all cursor-pointer border-r-2 border-[#141414] ${
             statusFilter === 'pending'
-              ? 'bg-[#E3A08A] text-[#3A2E27] shadow-sm'
-              : 'text-[#78665B] hover:text-[#3A2E27]'
+              ? 'bg-[#141414] text-[#F5F3EF]'
+              : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
           }`}
         >
           <Clock className="w-3 h-3" />
-          <span>Active ({totalPending})</span>
+          <span>ACTIVE ({totalPending})</span>
         </button>
         <button
           onClick={() => setStatusFilter('completed')}
-          className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+          className={`flex items-center gap-1 px-3 py-1 text-xs font-heading font-black uppercase transition-all cursor-pointer ${
             statusFilter === 'completed'
-              ? 'bg-[#E3A08A] text-[#3A2E27] shadow-sm'
-              : 'text-[#78665B] hover:text-[#3A2E27]'
+              ? 'bg-[#141414] text-[#F5F3EF]'
+              : 'text-[#141414] hover:bg-[#E8402C] hover:text-[#F5F3EF]'
           }`}
         >
           <CheckCircle2 className="w-3 h-3" />
-          <span>Done ({totalCompleted})</span>
+          <span>RESOLVED ({totalCompleted})</span>
         </button>
       </div>
 
-      {/* Category Pills */}
+      {/* Category Buttons */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
         {categories.map((cat) => {
           const isSelected = categoryFilter === cat.id;
@@ -64,13 +63,13 @@ export const QuestFilter = ({
             <button
               key={cat.id}
               onClick={() => setCategoryFilter(cat.id)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-1 text-xs font-heading font-black uppercase whitespace-nowrap border-2 border-[#141414] transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-[#3A2E27] text-[#FAF3E8] shadow-sm font-semibold'
-                  : 'text-[#78665B] hover:text-[#3A2E27] hover:bg-[#FAF3E8]'
+                  ? 'bg-[#141414] text-[#F5F3EF] shadow-brutal-sm'
+                  : 'bg-white hover:bg-[#EBE7DF] text-[#141414]'
               }`}
             >
-              {Icon && <Icon className="w-3 h-3" />}
+              {Icon && <Icon className="w-3 h-3 stroke-[2.5]" />}
               <span>{cat.label}</span>
             </button>
           );
