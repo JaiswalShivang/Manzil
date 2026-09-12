@@ -49,16 +49,8 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false }) =>
       {/* Viewport Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#141414] pb-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-[#141414] text-[#F5F3EF] px-2 py-0.5 text-[10px] font-heading font-black">
-              PAPERDOLL AVATAR RIG
-            </span>
-            <span className="text-[11px] font-heading font-black uppercase text-[#141414]/60">
-              HUD // LIVE EQUIPMENT VIEWPORT
-            </span>
-          </div>
           <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#141414] uppercase tracking-tight">
-            OPERATIVE STATUS: {user?.username || 'AGENT'}
+            ADVENTURER STATUS: {user?.username || 'ADVENTURER'}
           </h2>
         </div>
 

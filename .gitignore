@@ -19,6 +19,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 pnpm-lock.yaml.bak
+package-lock.json
+client/package-lock.json
+server/package-lock.json
 .pnpm-store/
 .vscode/*
 !.vscode/extensions.json
