@@ -179,9 +179,6 @@ export const ShopPage = () => {
       <div className="bg-[#141414] text-[#F5F3EF] border-3 border-[#141414] p-6 sm:p-8 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="bg-[#E8402C] text-white text-[10px] font-heading font-black px-2 py-0.5 uppercase">
-              REQUISITIONS
-            </span>
             <span className="text-[10px] font-heading font-bold text-[#F2B705] uppercase">
               // AVATAR ARMORY & EQUIPMENT
             </span>
@@ -221,7 +218,7 @@ export const ShopPage = () => {
               CURRENT LOADOUT PREVIEW
             </span>
             <h3 className="text-base font-heading font-black text-[#141414] uppercase mt-1">
-              OPERATIVE RIG: {user?.username || 'AGENT'}
+              ADVENTURER STATUS: {user?.username || 'AGENT'}
             </h3>
             <p className="text-xs font-mono text-[#141414]/70 mt-0.5 uppercase">
               Purchasing or equipping items will instantly update your character's live sprite walk cycle.

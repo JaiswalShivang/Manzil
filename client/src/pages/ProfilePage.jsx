@@ -115,7 +115,7 @@ export const ProfilePage = () => {
 
           <div>
             <div className="inline-block bg-[#E8402C] text-white text-[10px] font-mono font-black px-2 py-0.5 mb-1.5 uppercase">
-              // ACTIVE OPERATIVE RIG
+              // ACTIVE ADVENTURER STATUS
             </div>
             <div className="flex flex-wrap items-baseline gap-3">
               <h1 className="text-3xl sm:text-4xl font-black text-[#141414] font-space uppercase tracking-tight">

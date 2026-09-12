@@ -58,7 +58,7 @@ export const CharacterViewport = ({ user, onUnequip, isUnequipping = false }) =>
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#141414] uppercase tracking-tight">
-            OPERATIVE STATUS: {user?.username || 'AGENT'}
+            ADVENTURER STATUS: {user?.username || 'AGENT'}
           </h2>
         </div>
 
